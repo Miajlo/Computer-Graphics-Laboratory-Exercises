@@ -51,12 +51,34 @@ BOOL CIND18623View::PreCreateWindow(CREATESTRUCT& cs)
 
 // CIND18623View drawing
 
-void CIND18623View::OnDraw(CDC* /*pDC*/)
+void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &grid_unit_size) {
+	CPen* OldPen;
+	CPen gridPen(BS_SOLID, 1, RGB(255, 255, 255));
+	OldPen = pDC->SelectObject(&gridPen);
+	int x_offset = 25;
+	int y_offset = 25;
+	for (int i = 0; i <= grid_width / grid_unit_size; i++) {
+		pDC->MoveTo(grid_unit_size * i, 0);
+		pDC->LineTo(grid_unit_size * i, grid_height);
+	}
+	for (int i = 0; i <= grid_height / grid_unit_size; i++) {
+		pDC->MoveTo(0, grid_unit_size * i);
+		pDC->LineTo(grid_width, grid_unit_size * i);
+	}
+	pDC->SelectObject(OldPen);
+}
+
+void CIND18623View::OnDraw(CDC* pDC)
 {
 	CIND18623Doc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
+	
+	int g_width = 500, g_height = 500, g_unit_size = 20;
+
+	if (do_grid_draw)
+		draw_grid(pDC, g_width, g_height, g_unit_size);
 
 	// TODO: add draw code for native data here
 }
@@ -78,6 +100,22 @@ void CIND18623View::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 void CIND18623View::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: add cleanup after printing
+}
+
+BOOL CIND18623View::PreTranslateMessage(MSG* pMsg) {
+	if (pMsg->message == WM_KEYDOWN) // Check for key down message
+	{
+		switch (pMsg->wParam) // Check the key code
+		{
+		case 'G': // Check if the 'G' key is pressed
+			// Handle 'G' key press here
+			do_grid_draw = !do_grid_draw;
+			Invalidate();
+			return TRUE; // Return TRUE to indicate it was handled
+		}
+	}
+	return FALSE;
+
 }
 
 

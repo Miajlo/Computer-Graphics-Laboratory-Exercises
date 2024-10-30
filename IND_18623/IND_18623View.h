@@ -10,14 +10,14 @@ class CIND18623View : public CView
 protected: // create from serialization only
 	CIND18623View() noexcept;
 	DECLARE_DYNCREATE(CIND18623View)
-
+	bool do_grid_draw = false;
 // Attributes
 public:
 	CIND18623Doc* GetDocument() const;
-
+	
 // Operations
 public:
-
+	void draw_grid(CDC *pDC, int &grid_width, int &grid_height, int &grid_unit_size);
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
@@ -26,7 +26,7 @@ protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
-
+	virtual BOOL PreTranslateMessage(MSG* msg) override;
 // Implementation
 public:
 	virtual ~CIND18623View();
