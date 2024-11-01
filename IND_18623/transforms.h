@@ -1,11 +1,11 @@
 #pragma once
-#include<wingdi.h>
+#include <wingdi.h>
 #include <corecrt_math_defines.h>
 #include<cmath>
 
-namespace transforms {
-
-	XFORM get_translation_matrix(int &x, int &y) {
+class transforms {
+public:
+    static XFORM get_translation_matrix(int& x, int& y) {
         XFORM xForm;
         xForm.eM11 = 1.0f; // Scale X
         xForm.eM12 = 0.0f; // Shear X
@@ -15,9 +15,9 @@ namespace transforms {
         xForm.eDy = y; // Translate Y
 
         return xForm;
-	}
+    }
 
-    XFORM get_rotational_matrix(float &angle) {
+    static XFORM get_rotational_matrix(float& angle) {
         XFORM xForm;
 
         auto rad_angle = angle * M_PI / 180;
@@ -35,7 +35,7 @@ namespace transforms {
         return xForm;
     }
 
-    XFORM get_scaling_matrix(int &sx, int &sy) {
+    static XFORM get_scaling_matrix(int& sx, int& sy) {
         XFORM xForm;
 
         xForm.eM11 = sx;
@@ -47,4 +47,4 @@ namespace transforms {
 
         return xForm;
     }
-}
+};

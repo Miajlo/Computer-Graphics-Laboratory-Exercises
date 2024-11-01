@@ -57,6 +57,11 @@ BOOL CIND18623View::PreCreateWindow(CREATESTRUCT& cs)
 
 // CIND18623View drawing
 
+void CIND18623View::draw_trapezoid(CDC *pDC, CPoint position, int v_side, int h_side)
+{
+	return std::vector<CPoint>();
+}
+
 void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &grid_unit_size) {
 	CPen* OldPen;
 	CPen gridPen(BS_SOLID, 1, RGB(0, 255, 255));
@@ -89,7 +94,7 @@ void CIND18623View::OnDraw(CDC* pDC)
 
 	CString EMFname = _T("cactus_part.emf");
 	HENHMETAFILE hMetaFile = GetEnhMetaFile(EMFname);
-
+	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
 	if (hMetaFile) {
 		// Save the current world transform
 		XFORM oldTransform;
@@ -97,19 +102,16 @@ void CIND18623View::OnDraw(CDC* pDC)
 
 		// Define the angle for rotation
 		float angle = 90.0f; // Adjust as necessary
+		int x = 200, y = 200;
+		XFORM translation = transforms::get_translation_matrix(x, y);
+		XFORM rotation = transforms::get_rotational_matrix(angle);
+		pDC->SetWorldTransform(&translation);
+		pDC->ModifyWorldTransform(&rotation, MWT_LEFTMULTIPLY);
+		
+		// Step 2: Play the metafile at the origin (0, 0)
+		pDC->PlayMetaFile(hMetaFile, CRect(0, 0, 200, 200)); // Play the metafile relative to the origin
 
-		// Move the origin to the center of the rectangle
-		pDC->SetWorldTransform(&oldTransform); // Reset to old transform
-		pDC->SetViewportOrg(300, 300); // Set to center of your drawing area
-
-		// Apply the rotation
-		XFORM rotationMatrix = transforms::get_rotational_matrix(angle);
-		pDC->SetWorldTransform(&rotationMatrix);
-
-		// Play the metafile at the origin
-		pDC->PlayMetaFile(hMetaFile, CRect(0, 0, 200, 200)); // The position is relative to the new origin
-
-		// Restore the old world transform
+		// Step 3: Restore the old world transform
 		pDC->SetWorldTransform(&oldTransform);
 
 		// Clean up
@@ -118,7 +120,7 @@ void CIND18623View::OnDraw(CDC* pDC)
 	else {
 		AfxMessageBox(_T("Failed to load the Enhanced Metafile."));
 	}
-
+	old_mode = pDC->SetGraphicsMode(old_mode);
 	
 
 

@@ -5,7 +5,9 @@
 #pragma once
 #include <string>
 #include"file_utils.h"
-#include"transformations.h"
+#include"transforms.h"
+#include<vector>
+#include<unordered_map>
 
 class CIND18623View : public CView
 {
@@ -16,7 +18,7 @@ protected: // create from serialization only
 // Attributes
 public:
 	CIND18623Doc* GetDocument() const;
-	
+	void draw_trapezoid(CDC* pDC, CPoint position, int v_side, int h_side);
 // Operations
 public:
 	void draw_grid(CDC *pDC, int &grid_width, int &grid_height, int &grid_unit_size);
