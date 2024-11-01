@@ -22,6 +22,7 @@ public:
 // Operations
 public:
 	void draw_grid(CDC *pDC, int &grid_width, int &grid_height, int &grid_unit_size);
+	void draw_background(CDC* pDC, int& bg_width, int& bg_height);
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view

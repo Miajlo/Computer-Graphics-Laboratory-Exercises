@@ -57,9 +57,8 @@ BOOL CIND18623View::PreCreateWindow(CREATESTRUCT& cs)
 
 // CIND18623View drawing
 
-void CIND18623View::draw_trapezoid(CDC *pDC, CPoint position, int v_side, int h_side)
-{
-	return std::vector<CPoint>();
+void CIND18623View::draw_trapezoid(CDC *pDC, CPoint position, int v_side, int h_side) {
+	
 }
 
 void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &grid_unit_size) {
@@ -79,6 +78,17 @@ void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &
 	pDC->SelectObject(OldPen);
 }
 
+void CIND18623View::draw_background(CDC* pDC, int& bg_width, int& bg_height) {
+	CBrush new_brush(RGB(211, 211, 211));
+	
+	auto old_brush = pDC->SelectObject(&new_brush);
+	
+	pDC->Rectangle(0, 0, bg_width, bg_height);
+
+	pDC->SelectObject(old_brush);
+	old_brush = nullptr;
+}
+
 void CIND18623View::OnDraw(CDC* pDC)
 {
 	CIND18623Doc* pDoc = GetDocument();
@@ -87,10 +97,8 @@ void CIND18623View::OnDraw(CDC* pDC)
 		return;
 	
 	int g_width = 500, g_height = 500, g_unit_size = 20;
-
-	if (do_grid_draw)
-		draw_grid(pDC, g_width, g_height, g_unit_size);
-
+	int bg_width = g_width, bg_height = g_height;
+	draw_background(pDC, bg_width, bg_height);
 
 	CString EMFname = _T("cactus_part.emf");
 	HENHMETAFILE hMetaFile = GetEnhMetaFile(EMFname);
@@ -123,7 +131,8 @@ void CIND18623View::OnDraw(CDC* pDC)
 	old_mode = pDC->SetGraphicsMode(old_mode);
 	
 
-
+	if (do_grid_draw)
+		draw_grid(pDC, g_width, g_height, g_unit_size);
 	// TODO: add draw code for native data here
 }
 

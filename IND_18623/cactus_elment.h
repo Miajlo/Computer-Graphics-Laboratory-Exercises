@@ -1,16 +1,23 @@
 #pragma once
 #include <atltypes.h>
 
-enum META_TYPE {
-	GREEN_PART,
-	YELLOW_PART
-};
+namespace type_utils {
 
+	enum class MetaType {
+		GREEN_PART,
+		YELLOW_PART
+	};
 
-struct cactus_element {
-	CPoint position;
-	int sx; //scale
-	int sy;
-	float angle;
-	META_TYPE type;
-};
+	enum class ElementGroup {
+		ALL,
+		SINGLE
+	};
+
+	struct cactus_element {
+		CPoint position;
+		int sx; //scale
+		int sy;
+		float angle;
+		MetaType type;
+	};
+}
