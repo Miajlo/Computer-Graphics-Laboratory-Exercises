@@ -3,14 +3,16 @@
 //
 
 #pragma once
-
+#include <string>
+#include"file_utils.h"
+#include"transformations.h"
 
 class CIND18623View : public CView
 {
 protected: // create from serialization only
 	CIND18623View() noexcept;
 	DECLARE_DYNCREATE(CIND18623View)
-	bool do_grid_draw = false;
+	
 // Attributes
 public:
 	CIND18623Doc* GetDocument() const;
@@ -27,6 +29,13 @@ protected:
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual BOOL PreTranslateMessage(MSG* msg) override;
+
+	bool do_grid_draw = false;
+	std::string yellow_part_name = "cactus_part_light.emf";
+	std::string green_part_name = "cactus_part.emf";
+	std::string green_part_path;
+	std::string yellow_part_path;
+
 // Implementation
 public:
 	virtual ~CIND18623View();
@@ -40,6 +49,8 @@ protected:
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	
 };
 
 #ifndef _DEBUG  // debug version in IND_18623View.cpp

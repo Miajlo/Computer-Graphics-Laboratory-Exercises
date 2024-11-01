@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CIND18623View, CView)
 	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
+	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 // CIND18623View construction/destruction
@@ -34,6 +35,11 @@ END_MESSAGE_MAP()
 CIND18623View::CIND18623View() noexcept
 {
 	// TODO: add construction code here
+	auto current_directory = file_utils::get_current_directory();
+	
+	green_part_path = file_utils::combine_paths(current_directory, green_part_name);
+
+	yellow_part_path = file_utils::combine_paths(current_directory, yellow_part_name);
 
 }
 
@@ -53,7 +59,7 @@ BOOL CIND18623View::PreCreateWindow(CREATESTRUCT& cs)
 
 void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &grid_unit_size) {
 	CPen* OldPen;
-	CPen gridPen(BS_SOLID, 1, RGB(255, 255, 255));
+	CPen gridPen(BS_SOLID, 1, RGB(0, 255, 255));
 	OldPen = pDC->SelectObject(&gridPen);
 	int x_offset = 25;
 	int y_offset = 25;
@@ -80,6 +86,42 @@ void CIND18623View::OnDraw(CDC* pDC)
 	if (do_grid_draw)
 		draw_grid(pDC, g_width, g_height, g_unit_size);
 
+
+	CString EMFname = _T("cactus_part.emf");
+	HENHMETAFILE hMetaFile = GetEnhMetaFile(EMFname);
+
+	if (hMetaFile) {
+		// Save the current world transform
+		XFORM oldTransform;
+		pDC->GetWorldTransform(&oldTransform);
+
+		// Define the angle for rotation
+		float angle = 90.0f; // Adjust as necessary
+
+		// Move the origin to the center of the rectangle
+		pDC->SetWorldTransform(&oldTransform); // Reset to old transform
+		pDC->SetViewportOrg(300, 300); // Set to center of your drawing area
+
+		// Apply the rotation
+		XFORM rotationMatrix = transforms::get_rotational_matrix(angle);
+		pDC->SetWorldTransform(&rotationMatrix);
+
+		// Play the metafile at the origin
+		pDC->PlayMetaFile(hMetaFile, CRect(0, 0, 200, 200)); // The position is relative to the new origin
+
+		// Restore the old world transform
+		pDC->SetWorldTransform(&oldTransform);
+
+		// Clean up
+		DeleteEnhMetaFile(hMetaFile);
+	}
+	else {
+		AfxMessageBox(_T("Failed to load the Enhanced Metafile."));
+	}
+
+	
+
+
 	// TODO: add draw code for native data here
 }
 
@@ -105,8 +147,7 @@ void CIND18623View::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 BOOL CIND18623View::PreTranslateMessage(MSG* pMsg) {
 	if (pMsg->message == WM_KEYDOWN) // Check for key down message
 	{
-		switch (pMsg->wParam) // Check the key code
-		{
+		switch (pMsg->wParam) { // Check the key code
 		case 'G': // Check if the 'G' key is pressed
 			// Handle 'G' key press here
 			do_grid_draw = !do_grid_draw;
