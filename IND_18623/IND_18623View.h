@@ -17,7 +17,6 @@ struct scale {
 	float sy;
 };
 
-
 const scale big_cactus = { 0.3f, 0.35f };
 const scale mid_cactus = { 0.2f, 0.35f };
 const scale small_cactus = { 0.1f, 0.35f };
@@ -101,6 +100,8 @@ protected:
 		{362, 295}
 	};
 	const int elipse_size = 20;
+	const float rot_angle = 6;
+
 // Implementation
 public:
 	virtual ~CIND18623View();

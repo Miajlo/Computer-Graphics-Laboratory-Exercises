@@ -66,8 +66,7 @@ void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &
 	CPen* OldPen;
 	CPen gridPen(BS_SOLID, 1, GRID_COLOR);
 	OldPen = pDC->SelectObject(&gridPen);
-	int x_offset = 25;
-	int y_offset = 25;
+
 	for (int i = 0; i <= grid_width / grid_unit_size; i++) {
 		pDC->MoveTo(grid_unit_size * i, 0);
 		pDC->LineTo(grid_unit_size * i, grid_height);
@@ -76,6 +75,7 @@ void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &
 		pDC->MoveTo(0, grid_unit_size * i);
 		pDC->LineTo(grid_width, grid_unit_size * i);
 	}
+
 	pDC->SelectObject(OldPen);
 }
 
@@ -265,22 +265,22 @@ void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 			redraw_requierd = true;
 			break;
 		case 0x51: //q
-			cactus_elements[0].angle -= 5;
+			cactus_elements[0].angle -= rot_angle;
 			redraw_requierd = true;
 			break;
 
 		case 0x45: //e
-			cactus_elements[0].angle += 5;
+			cactus_elements[0].angle += rot_angle;
 			redraw_requierd = true;
 			break;
 
 		case 0x41: //a
-			all_obj_rot_angle -= 5;
+			all_obj_rot_angle -= rot_angle;
 			redraw_requierd = true;
 			break;
 
 		case 0x44: //d
-			all_obj_rot_angle += 5;
+			all_obj_rot_angle += rot_angle;
 			redraw_requierd = true;
 			break;
 	}
