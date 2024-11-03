@@ -6,9 +6,20 @@
 #include <string>
 #include"transforms.h"
 #include<vector>
-#include<unordered_map>
-#include"cactus_elment.h"
-using type_utils::ObjectType;
+
+enum class ObjectType {
+	GREEN_PART,
+	YELLOW_PART,
+};
+
+class cactus_element {
+public:
+	CPoint position;
+	float sx; //scale
+	float sy;
+	float angle;
+	ObjectType type;
+};
 
 class CIND18623View : public CView
 {
@@ -46,12 +57,19 @@ protected:
 
 	std::vector<CPoint> trapezoid = { {210, 500}, {291, 500}, {300, 450}, {200, 450} };
 	std::vector<CPoint> rectangle = { {188,450}, {310, 430} };
+	
+	const int metaf_y_offset = 209;
+	const int metaf_x_offset = 109;
+
 	const CPoint all_rot_point = { 250, 426 };
+	const COLORREF BG_COLOR = RGB(135, 206, 235);
+	const COLORREF GRID_COLOR = RGB(255, 255, 255);
+	const COLORREF ELIPSE_COLOR = RGB(0, 204, 0);
+	const COLORREF FLOWER_POT_COLOR = RGB(222, 148, 0);
 
-
-	std::vector<type_utils::cactus_element> cactus_elements = {
+	std::vector<cactus_element> cactus_elements = {
 		{ CPoint(300, 305), 0.2f, 0.35f, 0, ObjectType::YELLOW_PART },
-		{CPoint(250, 425), 0.3f, 0.35f, 0, ObjectType::YELLOW_PART},
+		{ CPoint(250, 425), 0.3f, 0.35f, 0, ObjectType::YELLOW_PART},
 		{ CPoint(250, 355), 0.1f, 0.35f, -45.0f, ObjectType::GREEN_PART },
 		{ CPoint(250, 355), 0.1f, 0.35f, 0, ObjectType::GREEN_PART },
 		{ CPoint(250, 355), 0.1f, 0.35f, 45.0f, ObjectType::GREEN_PART },

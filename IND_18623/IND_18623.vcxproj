@@ -183,8 +183,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="cactus_elment.h" />
-    <ClInclude Include="file_utils.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IND_18623.h" />
     <ClInclude Include="IND_18623Doc.h" />

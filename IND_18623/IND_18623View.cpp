@@ -53,7 +53,7 @@ BOOL CIND18623View::PreCreateWindow(CREATESTRUCT& cs)
 // CIND18623View drawing
 
 void CIND18623View::draw_flower_pot(CDC *pDC) {
-	CBrush nova(RGB(222, 148, 0));
+	CBrush nova(FLOWER_POT_COLOR);
 	auto old_brush = pDC->SelectObject(&nova);
 
 	pDC->Polygon(trapezoid.data(), trapezoid.size());
@@ -64,7 +64,7 @@ void CIND18623View::draw_flower_pot(CDC *pDC) {
 
 void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &grid_unit_size) {
 	CPen* OldPen;
-	CPen gridPen(BS_SOLID, 1, RGB(255, 255, 255));
+	CPen gridPen(BS_SOLID, 1, GRID_COLOR);
 	OldPen = pDC->SelectObject(&gridPen);
 	int x_offset = 25;
 	int y_offset = 25;
@@ -80,7 +80,7 @@ void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &
 }
 
 void CIND18623View::draw_background(CDC* pDC, int& bg_width, int& bg_height) {
-	CBrush new_brush(RGB(135, 206, 235));
+	CBrush new_brush(BG_COLOR);
 	
 	auto old_brush = pDC->SelectObject(&new_brush);
 	
@@ -96,16 +96,31 @@ void CIND18623View::draw_figure(CDC* pDC) {
 	CString yellow_path = _T("cactus_part_light.emf");
 	HENHMETAFILE yellow_part = GetEnhMetaFile(yellow_path);
 
-
-
 	draw_cactus_elements(pDC, green_part, yellow_part);
 
 	draw_elipses(pDC);
 
+	CBrush nova_ceta(ELIPSE_COLOR);
+	auto old_brush = pDC->SelectObject(&nova_ceta);
+	pDC->Ellipse(239, 416, 261, 436);
+	pDC->SelectObject(old_brush);
+
+	if (yellow_part){
+	
+		DeleteEnhMetaFile(yellow_part);
+		yellow_part = NULL; 
+	}
+	
+	if (green_part) {
+
+		DeleteEnhMetaFile(yellow_part);
+		green_part = NULL;
+	}
+
 }
 
 void CIND18623View::draw_elipses(CDC* pDC) {
-	CBrush nova_ceta(RGB(0, 204, 0));
+	CBrush nova_ceta(ELIPSE_COLOR);
 	auto old_brush = pDC->SelectObject(&nova_ceta);
 	
 	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
@@ -118,7 +133,7 @@ void CIND18623View::draw_elipses(CDC* pDC) {
 		rotate(pDC, all_obj_rot_angle, right_mult);
 		translate(pDC, all_rot_point.x, all_rot_point.y, right_mult);
 
-		pDC->Ellipse(elipse.x, elipse.y, elipse.x + elipse_size, elipse.y + elipse_size);
+		pDC->Ellipse(0, 0, elipse_size, elipse_size);
 
 		pDC->SetWorldTransform(&old_transform);
 	}
@@ -129,13 +144,9 @@ void CIND18623View::draw_elipses(CDC* pDC) {
 
 void CIND18623View::draw_cactus_elements(CDC* pDC, HENHMETAFILE& green_part, HENHMETAFILE& yellow_part) {
 	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
-	float angle = 45;
 	XFORM old_transform;
 	pDC->GetWorldTransform(&old_transform);
 	bool right_mult = true;
-
-
-
 
 	for (const auto& elem : cactus_elements) {
 		scale(pDC, elem.sx, elem.sy, right_mult);
@@ -146,7 +157,8 @@ void CIND18623View::draw_cactus_elements(CDC* pDC, HENHMETAFILE& green_part, HEN
 		translate(pDC, all_rot_point.x, all_rot_point.y, right_mult);
 
 		pDC->PlayMetaFile(elem.type == ObjectType::GREEN_PART ?
-			green_part : yellow_part, CRect(-109, 0, 109, -209));
+						  green_part : yellow_part,
+						  CRect(-metaf_x_offset, 0, metaf_x_offset, -metaf_y_offset));
 
 
 		pDC->SetWorldTransform(&old_transform);
@@ -189,21 +201,10 @@ void CIND18623View::OnDraw(CDC* pDC)
 
 
 	draw_background(pDC, bg_width, bg_height);
-
-	CBrush nova_ceta(RGB(0, 204, 0));
-	auto old_brush = pDC->SelectObject(&nova_ceta);
-	pDC->Ellipse(239, 416, 261, 436);
-	pDC->SelectObject(old_brush);
-
+		
 	draw_figure(pDC);
 
-	draw_elipses(pDC);
-
 	draw_flower_pot(pDC);
-
-	
-
-	
 
 	if (do_grid_draw)
 		draw_grid(pDC, g_width, g_height, g_unit_size);
@@ -261,22 +262,22 @@ void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 			redraw_requierd = true;
 			break;
 		case 0x51: //q
-			cactus_elements[0].angle += 5;
-			redraw_requierd = true;
-			break;
-
-		case 0x45: //e
 			cactus_elements[0].angle -= 5;
 			redraw_requierd = true;
 			break;
 
+		case 0x45: //e
+			cactus_elements[0].angle += 5;
+			redraw_requierd = true;
+			break;
+
 		case 0x41: //a
-			all_obj_rot_angle += 5;
+			all_obj_rot_angle -= 5;
 			redraw_requierd = true;
 			break;
 
 		case 0x44: //d
-			all_obj_rot_angle -= 5;
+			all_obj_rot_angle += 5;
 			redraw_requierd = true;
 			break;
 	}

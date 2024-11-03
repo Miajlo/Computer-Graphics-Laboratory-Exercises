@@ -39,13 +39,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="file_utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="transforms.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cactus_elment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
