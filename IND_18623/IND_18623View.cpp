@@ -28,6 +28,7 @@ BEGIN_MESSAGE_MAP(CIND18623View, CView)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
 	ON_WM_KEYDOWN()
+	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 // CIND18623View construction/destruction
@@ -35,12 +36,6 @@ END_MESSAGE_MAP()
 CIND18623View::CIND18623View() noexcept
 {
 	// TODO: add construction code here
-	auto current_directory = file_utils::get_current_directory();
-	
-	green_part_path = file_utils::combine_paths(current_directory, green_part_name);
-
-	yellow_part_path = file_utils::combine_paths(current_directory, yellow_part_name);
-
 }
 
 CIND18623View::~CIND18623View()
@@ -57,13 +52,19 @@ BOOL CIND18623View::PreCreateWindow(CREATESTRUCT& cs)
 
 // CIND18623View drawing
 
-void CIND18623View::draw_trapezoid(CDC *pDC, CPoint position, int v_side, int h_side) {
-	
+void CIND18623View::draw_flower_pot(CDC *pDC) {
+	CBrush nova(RGB(222, 148, 0));
+	auto old_brush = pDC->SelectObject(&nova);
+
+	pDC->Polygon(trapezoid.data(), trapezoid.size());
+	pDC->Rectangle(rectangle[0].x, rectangle[0].y, rectangle[1].x, rectangle[1].y);
+
+	pDC->SelectObject(old_brush);
 }
 
 void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &grid_unit_size) {
 	CPen* OldPen;
-	CPen gridPen(BS_SOLID, 1, RGB(0, 255, 255));
+	CPen gridPen(BS_SOLID, 1, RGB(255, 255, 255));
 	OldPen = pDC->SelectObject(&gridPen);
 	int x_offset = 25;
 	int y_offset = 25;
@@ -89,6 +90,34 @@ void CIND18623View::draw_background(CDC* pDC, int& bg_width, int& bg_height) {
 	old_brush = nullptr;
 }
 
+void CIND18623View::draw_figure(CDC* pDC) {
+
+
+}
+
+void CIND18623View::translate(CDC* pDC, float dX, float dY, bool right_multiply) {
+
+	XFORM translate = transforms::get_translation_matrix(dX, dY);
+
+	pDC->ModifyWorldTransform(&translate, right_multiply ? MWT_RIGHTMULTIPLY 
+														 : MWT_LEFTMULTIPLY);
+
+}
+
+void CIND18623View::scale(CDC* pDC, float sX, float sY, bool right_multiply) {
+	XFORM scale = transforms::get_scaling_matrix(sX, sY);
+
+	pDC->ModifyWorldTransform(&scale, right_multiply ? MWT_RIGHTMULTIPLY
+													 : MWT_LEFTMULTIPLY);
+}
+
+void CIND18623View::rotate(CDC* pDC, float angle, bool right_multiply) {
+	XFORM rotation = transforms::get_rotational_matrix(angle);
+
+	pDC->ModifyWorldTransform(&rotation, right_multiply ? MWT_RIGHTMULTIPLY
+														: MWT_LEFTMULTIPLY);
+}
+
 void CIND18623View::OnDraw(CDC* pDC)
 {
 	CIND18623Doc* pDoc = GetDocument();
@@ -98,36 +127,57 @@ void CIND18623View::OnDraw(CDC* pDC)
 	
 	int g_width = 500, g_height = 500, g_unit_size = 20;
 	int bg_width = g_width, bg_height = g_height;
+
+
 	draw_background(pDC, bg_width, bg_height);
 
-	CString EMFname = _T("cactus_part.emf");
-	HENHMETAFILE hMetaFile = GetEnhMetaFile(EMFname);
+	CBrush nova_ceta(RGB(0, 204, 0));
+	auto old_brush = pDC->SelectObject(&nova_ceta);
+	pDC->Ellipse(239, 416, 261, 436);
+	pDC->SelectObject(old_brush);
+
+	draw_flower_pot(pDC);
+
+	CString green_path = _T("cactus_part.emf");
+	HENHMETAFILE green_part = GetEnhMetaFile(green_path);
+	CString yellow_path = _T("cactus_part_light.emf");
+	HENHMETAFILE yellow_part = GetEnhMetaFile(yellow_path);
+
 	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
-	if (hMetaFile) {
-		// Save the current world transform
-		XFORM oldTransform;
-		pDC->GetWorldTransform(&oldTransform);
+	float angle = 45;
+	XFORM old_transform;
+	pDC->GetWorldTransform(&old_transform);
+	bool right_mult = true;
+	
+	int mx1  = 250, my1 = 315, rpx = 250, rpy = 425;
 
-		// Define the angle for rotation
-		float angle = 90.0f; // Adjust as necessary
-		int x = 200, y = 200;
-		XFORM translation = transforms::get_translation_matrix(x, y);
-		XFORM rotation = transforms::get_rotational_matrix(angle);
-		pDC->SetWorldTransform(&translation);
-		pDC->ModifyWorldTransform(&rotation, MWT_LEFTMULTIPLY);
-		
-		// Step 2: Play the metafile at the origin (0, 0)
-		pDC->PlayMetaFile(hMetaFile, CRect(0, 0, 200, 200)); // Play the metafile relative to the origin
+	scale(pDC, 0.3, 0.35, right_mult);
+	rotate(pDC, 45, right_mult);
+	translate(pDC, rpx,  rpy, right_mult);
+	//translate(pDC, mx1 + rpx, my1 + rpy, right_mult);
+	
+	pDC->PlayMetaFile(yellow_part, CRect(-109, 0, 109, -209));
 
-		// Step 3: Restore the old world transform
-		pDC->SetWorldTransform(&oldTransform);
+	
+	pDC->SetWorldTransform(&old_transform);
 
-		// Clean up
-		DeleteEnhMetaFile(hMetaFile);
-	}
-	else {
-		AfxMessageBox(_T("Failed to load the Enhanced Metafile."));
-	}
+	scale(pDC, 0.1, 0.35, right_mult);
+	translate(pDC, 250 - rpx, 355 - rpy, right_mult);
+	rotate(pDC, 45, right_mult);
+	translate(pDC, rpx, rpy, right_mult);
+	pDC->PlayMetaFile(green_part, CRect(-109, 0, 109, -209));
+
+
+	pDC->SetWorldTransform(&old_transform);
+
+	old_brush = pDC->SelectObject(&nova_ceta);
+	pDC->Ellipse(239, 345, 259, 365);
+	pDC->SelectObject(old_brush);
+
+	pDC->SetWorldTransform(&old_transform);
+
+
+
 	old_mode = pDC->SetGraphicsMode(old_mode);
 	
 
@@ -155,20 +205,20 @@ void CIND18623View::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 	// TODO: add cleanup after printing
 }
 
-BOOL CIND18623View::PreTranslateMessage(MSG* pMsg) {
-	if (pMsg->message == WM_KEYDOWN) // Check for key down message
-	{
-		switch (pMsg->wParam) { // Check the key code
-		case 'G': // Check if the 'G' key is pressed
-			// Handle 'G' key press here
-			do_grid_draw = !do_grid_draw;
-			Invalidate();
-			return TRUE; // Return TRUE to indicate it was handled
-		}
-	}
-	return FALSE;
-
-}
+//BOOL CIND18623View::PreTranslateMessage(MSG* pMsg) {
+//	if (pMsg->message == WM_KEYDOWN) // Check for key down message
+//	{
+//		switch (pMsg->wParam) { // Check the key code
+//		case 'G': // Check if the 'G' key is pressed
+//			// Handle 'G' key press here
+//			do_grid_draw = !do_grid_draw;
+//			Invalidate();
+//			return TRUE; // Return TRUE to indicate it was handled
+//		}
+//	}
+//	return FALSE;
+//
+//}
 
 
 // CIND18623View diagnostics
@@ -193,3 +243,15 @@ CIND18623Doc* CIND18623View::GetDocument() const // non-debug version is inline
 
 
 // CIND18623View message handlers
+
+void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	switch (nChar) {
+		case 0x47:
+			do_grid_draw = !do_grid_draw;
+			break;
+	}
+	Invalidate();
+
+	CView::OnKeyDown(nChar, nRepCnt, nFlags);
+}

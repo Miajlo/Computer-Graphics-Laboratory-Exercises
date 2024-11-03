@@ -5,7 +5,7 @@
 
 class transforms {
 public:
-    static XFORM get_translation_matrix(int& x, int& y) {
+    static XFORM get_translation_matrix(float& x, float& y) {
         XFORM xForm;
         xForm.eM11 = 1.0f; // Scale X
         xForm.eM12 = 0.0f; // Shear X
@@ -35,7 +35,7 @@ public:
         return xForm;
     }
 
-    static XFORM get_scaling_matrix(int& sx, int& sy) {
+    static XFORM get_scaling_matrix(float& sx, float& sy) {
         XFORM xForm;
 
         xForm.eM11 = sx;

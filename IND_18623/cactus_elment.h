@@ -1,23 +1,31 @@
 #pragma once
 #include <atltypes.h>
+#include<vector>
+
 
 namespace type_utils {
 
-	enum class MetaType {
+
+	
+
+	enum class ObjectType {
 		GREEN_PART,
-		YELLOW_PART
+		YELLOW_PART,
+		CIRCLE
 	};
 
-	enum class ElementGroup {
-		ALL,
-		SINGLE
-	};
 
-	struct cactus_element {
+	class cactus_element {
+	public:
 		CPoint position;
-		int sx; //scale
-		int sy;
+		float sx; //scale
+		float sy;
 		float angle;
-		MetaType type;
+		ObjectType type;
+	};
+
+	struct element_group {
+		std::vector<cactus_element> elementi;
+		CPoint rotation_point;
 	};
 }
