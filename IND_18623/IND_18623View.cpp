@@ -91,8 +91,48 @@ void CIND18623View::draw_background(CDC* pDC, int& bg_width, int& bg_height) {
 }
 
 void CIND18623View::draw_figure(CDC* pDC) {
+	CString green_path = _T("cactus_part.emf");
+	HENHMETAFILE green_part = GetEnhMetaFile(green_path);
+	CString yellow_path = _T("cactus_part_light.emf");
+	HENHMETAFILE yellow_part = GetEnhMetaFile(yellow_path);
 
 
+
+	draw_cactus_elements(pDC, green_part, yellow_part);
+
+	
+
+}
+
+void CIND18623View::draw_elipses(CDC* pDC) {
+
+}
+
+void CIND18623View::draw_cactus_elements(CDC* pDC, HENHMETAFILE& green_part, HENHMETAFILE& yellow_part) {
+	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
+	float angle = 45;
+	XFORM old_transform;
+	pDC->GetWorldTransform(&old_transform);
+	bool right_mult = true;
+
+
+
+
+	for (const auto& elem : all_objects.elementi) {
+		scale(pDC, elem.sx, elem.sy, right_mult);
+		rotate(pDC, elem.angle, right_mult);
+		translate(pDC, elem.position.x - all_rot_point.x,
+			elem.position.y - all_rot_point.y, right_mult);
+		rotate(pDC, all_obj_rot_angle, right_mult);
+		translate(pDC, all_rot_point.x, all_rot_point.y, right_mult);
+
+		pDC->PlayMetaFile(elem.type == ObjectType::GREEN_PART ?
+			green_part : yellow_part, CRect(-109, 0, 109, -209));
+
+
+		pDC->SetWorldTransform(&old_transform);
+	}
+	pDC->SetGraphicsMode(old_mode);
 }
 
 void CIND18623View::translate(CDC* pDC, float dX, float dY, bool right_multiply) {
@@ -136,50 +176,21 @@ void CIND18623View::OnDraw(CDC* pDC)
 	pDC->Ellipse(239, 416, 261, 436);
 	pDC->SelectObject(old_brush);
 
+	draw_figure(pDC);
+
+	draw_elipses(pDC);
+
 	draw_flower_pot(pDC);
 
-	CString green_path = _T("cactus_part.emf");
-	HENHMETAFILE green_part = GetEnhMetaFile(green_path);
-	CString yellow_path = _T("cactus_part_light.emf");
-	HENHMETAFILE yellow_part = GetEnhMetaFile(yellow_path);
-
-	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
-	float angle = 45;
-	XFORM old_transform;
-	pDC->GetWorldTransform(&old_transform);
-	bool right_mult = true;
 	
-	int mx1  = 250, my1 = 315, rpx = 250, rpy = 425;
-
-	scale(pDC, 0.3, 0.35, right_mult);
-	rotate(pDC, 45, right_mult);
-	translate(pDC, rpx,  rpy, right_mult);
-	//translate(pDC, mx1 + rpx, my1 + rpy, right_mult);
-	
-	pDC->PlayMetaFile(yellow_part, CRect(-109, 0, 109, -209));
-
-	
-	pDC->SetWorldTransform(&old_transform);
-
-	scale(pDC, 0.1, 0.35, right_mult);
-	translate(pDC, 250 - rpx, 355 - rpy, right_mult);
-	rotate(pDC, 45, right_mult);
-	translate(pDC, rpx, rpy, right_mult);
-	pDC->PlayMetaFile(green_part, CRect(-109, 0, 109, -209));
-
-
-	pDC->SetWorldTransform(&old_transform);
 
 	old_brush = pDC->SelectObject(&nova_ceta);
-	pDC->Ellipse(239, 345, 259, 365);
+	pDC->Ellipse(240, 343, 260, 363);
+	pDC->Ellipse(185, 295, 205, 315);
+	pDC->Ellipse(185, 220, 205, 240);
+	pDC->Ellipse(290, 295, 310, 315);
+	pDC->Ellipse(362, 295, 382, 315);
 	pDC->SelectObject(old_brush);
-
-	pDC->SetWorldTransform(&old_transform);
-
-
-
-	old_mode = pDC->SetGraphicsMode(old_mode);
-	
 
 	if (do_grid_draw)
 		draw_grid(pDC, g_width, g_height, g_unit_size);

@@ -26,6 +26,8 @@ public:
 	void draw_background(CDC* pDC, int& bg_width, int& bg_height);
 
 	void draw_figure(CDC* pDC);
+	void draw_elipses(CDC* pDC);
+	void draw_cactus_elements(CDC* pdc, HENHMETAFILE& green_part, HENHMETAFILE& yellow_part);
 
 	void translate(CDC* pDC, float dX, float dY, bool right_multiply);
 	void scale(CDC* pDC, float sX, float sY, bool right_multiply);
@@ -50,16 +52,37 @@ protected:
 	type_utils::element_group all_objects = {
 		
 		std::vector<type_utils::cactus_element>{
-			{CPoint(100, 200), 0.5f, 0.5f, 45.0f, ObjectType::GREEN_PART},
-			{CPoint(150, 250), 0.3f, 0.3f, 90.0f, ObjectType::YELLOW_PART},
-			{CPoint(200, 300), 1.0f, 1.0f, 30.0f, ObjectType::CIRCLE}
+			{CPoint(250, 425), 0.3f, 0.35f, 0, ObjectType::YELLOW_PART},
+			{CPoint(250, 355), 0.1f, 0.35f, -45.0f, ObjectType::GREEN_PART},
+			{CPoint(250, 355), 0.1f, 0.35f, 0, ObjectType::GREEN_PART},
+			{CPoint(250, 355), 0.1f, 0.35f, 45.0f, ObjectType::GREEN_PART},
+			{CPoint(195, 305), 0.2f, 0.35f, -90.0f, ObjectType::GREEN_PART},
+			{CPoint(195, 305), 0.2f, 0.35f, 0, ObjectType::GREEN_PART},
+			{ CPoint(195, 230), 0.3f, 0.35f, 0, ObjectType::GREEN_PART },
+			{CPoint(300, 305), 0.2f, 0.35f, 0, ObjectType::YELLOW_PART},
+			{CPoint(300, 305), 0.2f, 0.35f, 90, ObjectType::GREEN_PART},
+			{CPoint(370, 305), 0.2f, 0.35f, 45, ObjectType::GREEN_PART},
+			{CPoint(370, 305), 0.2f, 0.35f, 135, ObjectType::GREEN_PART}
 		},
 		
+		CPoint(all_rot_point)
+	};
+	float all_obj_rot_angle = 0;
+	type_utils::element_group signle_object = {
+		std::vector<type_utils::cactus_element>{
+			{CPoint(100, 200), 0.5f, 0.5f, 45.0f, ObjectType::GREEN_PART},
+		},
 		CPoint(120, 220)
 	};
 
-
-
+	const std::vector<CPoint> elipse_coords = {
+		{240, 343},
+		{185, 295},
+		{185, 220},
+		{290, 295},
+		{362, 295}
+	};
+	const int elipse_size = 20;
 // Implementation
 public:
 	virtual ~CIND18623View();

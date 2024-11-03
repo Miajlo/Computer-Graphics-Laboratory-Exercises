@@ -4,10 +4,6 @@
 
 
 namespace type_utils {
-
-
-	
-
 	enum class ObjectType {
 		GREEN_PART,
 		YELLOW_PART,
