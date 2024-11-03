@@ -80,7 +80,7 @@ void CIND18623View::draw_grid(CDC* pDC, int &grid_width, int &grid_height, int &
 }
 
 void CIND18623View::draw_background(CDC* pDC, int& bg_width, int& bg_height) {
-	CBrush new_brush(RGB(211, 211, 211));
+	CBrush new_brush(RGB(135, 206, 235));
 	
 	auto old_brush = pDC->SelectObject(&new_brush);
 	
@@ -100,12 +100,31 @@ void CIND18623View::draw_figure(CDC* pDC) {
 
 	draw_cactus_elements(pDC, green_part, yellow_part);
 
-	
+	draw_elipses(pDC);
 
 }
 
 void CIND18623View::draw_elipses(CDC* pDC) {
+	CBrush nova_ceta(RGB(0, 204, 0));
+	auto old_brush = pDC->SelectObject(&nova_ceta);
+	
+	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
+	XFORM old_transform;
+	pDC->GetWorldTransform(&old_transform);
+	bool right_mult = true;
 
+	for (const auto& elipse : elipse_coords) {
+		translate(pDC, elipse.x - all_rot_point.x, elipse.y - all_rot_point.y, right_mult);
+		rotate(pDC, all_obj_rot_angle, right_mult);
+		translate(pDC, all_rot_point.x, all_rot_point.y, right_mult);
+
+		pDC->Ellipse(elipse.x, elipse.y, elipse.x + elipse_size, elipse.y + elipse_size);
+
+		pDC->SetWorldTransform(&old_transform);
+	}
+
+	pDC->SelectObject(old_brush);
+	pDC->SetGraphicsMode(old_mode);
 }
 
 void CIND18623View::draw_cactus_elements(CDC* pDC, HENHMETAFILE& green_part, HENHMETAFILE& yellow_part) {
@@ -118,7 +137,7 @@ void CIND18623View::draw_cactus_elements(CDC* pDC, HENHMETAFILE& green_part, HEN
 
 
 
-	for (const auto& elem : all_objects.elementi) {
+	for (const auto& elem : cactus_elements) {
 		scale(pDC, elem.sx, elem.sy, right_mult);
 		rotate(pDC, elem.angle, right_mult);
 		translate(pDC, elem.position.x - all_rot_point.x,
@@ -184,13 +203,7 @@ void CIND18623View::OnDraw(CDC* pDC)
 
 	
 
-	old_brush = pDC->SelectObject(&nova_ceta);
-	pDC->Ellipse(240, 343, 260, 363);
-	pDC->Ellipse(185, 295, 205, 315);
-	pDC->Ellipse(185, 220, 205, 240);
-	pDC->Ellipse(290, 295, 310, 315);
-	pDC->Ellipse(362, 295, 382, 315);
-	pDC->SelectObject(old_brush);
+	
 
 	if (do_grid_draw)
 		draw_grid(pDC, g_width, g_height, g_unit_size);
@@ -216,22 +229,6 @@ void CIND18623View::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 	// TODO: add cleanup after printing
 }
 
-//BOOL CIND18623View::PreTranslateMessage(MSG* pMsg) {
-//	if (pMsg->message == WM_KEYDOWN) // Check for key down message
-//	{
-//		switch (pMsg->wParam) { // Check the key code
-//		case 'G': // Check if the 'G' key is pressed
-//			// Handle 'G' key press here
-//			do_grid_draw = !do_grid_draw;
-//			Invalidate();
-//			return TRUE; // Return TRUE to indicate it was handled
-//		}
-//	}
-//	return FALSE;
-//
-//}
-
-
 // CIND18623View diagnostics
 
 #ifdef _DEBUG
@@ -255,14 +252,36 @@ CIND18623Doc* CIND18623View::GetDocument() const // non-debug version is inline
 
 // CIND18623View message handlers
 
-void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
+void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
+	bool redraw_requierd = false;
+
 	switch (nChar) {
-		case 0x47:
+		case 0x47: //G
 			do_grid_draw = !do_grid_draw;
+			redraw_requierd = true;
+			break;
+		case 0x51: //q
+			cactus_elements[0].angle += 5;
+			redraw_requierd = true;
+			break;
+
+		case 0x45: //e
+			cactus_elements[0].angle -= 5;
+			redraw_requierd = true;
+			break;
+
+		case 0x41: //a
+			all_obj_rot_angle += 5;
+			redraw_requierd = true;
+			break;
+
+		case 0x44: //d
+			all_obj_rot_angle -= 5;
+			redraw_requierd = true;
 			break;
 	}
-	Invalidate();
+	if(redraw_requierd)
+		Invalidate();
 
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }

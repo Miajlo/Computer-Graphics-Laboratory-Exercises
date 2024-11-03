@@ -40,7 +40,6 @@ protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
-	//virtual BOOL PreTranslateMessage(MSG* msg) override;
 
 	bool do_grid_draw = false;
 
@@ -49,32 +48,22 @@ protected:
 	std::vector<CPoint> rectangle = { {188,450}, {310, 430} };
 	const CPoint all_rot_point = { 250, 426 };
 
-	type_utils::element_group all_objects = {
-		
-		std::vector<type_utils::cactus_element>{
-			{CPoint(250, 425), 0.3f, 0.35f, 0, ObjectType::YELLOW_PART},
-			{CPoint(250, 355), 0.1f, 0.35f, -45.0f, ObjectType::GREEN_PART},
-			{CPoint(250, 355), 0.1f, 0.35f, 0, ObjectType::GREEN_PART},
-			{CPoint(250, 355), 0.1f, 0.35f, 45.0f, ObjectType::GREEN_PART},
-			{CPoint(195, 305), 0.2f, 0.35f, -90.0f, ObjectType::GREEN_PART},
-			{CPoint(195, 305), 0.2f, 0.35f, 0, ObjectType::GREEN_PART},
-			{ CPoint(195, 230), 0.3f, 0.35f, 0, ObjectType::GREEN_PART },
-			{CPoint(300, 305), 0.2f, 0.35f, 0, ObjectType::YELLOW_PART},
-			{CPoint(300, 305), 0.2f, 0.35f, 90, ObjectType::GREEN_PART},
-			{CPoint(370, 305), 0.2f, 0.35f, 45, ObjectType::GREEN_PART},
-			{CPoint(370, 305), 0.2f, 0.35f, 135, ObjectType::GREEN_PART}
-		},
-		
-		CPoint(all_rot_point)
+
+	std::vector<type_utils::cactus_element> cactus_elements = {
+		{ CPoint(300, 305), 0.2f, 0.35f, 0, ObjectType::YELLOW_PART },
+		{CPoint(250, 425), 0.3f, 0.35f, 0, ObjectType::YELLOW_PART},
+		{ CPoint(250, 355), 0.1f, 0.35f, -45.0f, ObjectType::GREEN_PART },
+		{ CPoint(250, 355), 0.1f, 0.35f, 0, ObjectType::GREEN_PART },
+		{ CPoint(250, 355), 0.1f, 0.35f, 45.0f, ObjectType::GREEN_PART },
+		{ CPoint(195, 305), 0.2f, 0.35f, -90.0f, ObjectType::GREEN_PART },
+		{ CPoint(195, 305), 0.2f, 0.35f, 0, ObjectType::GREEN_PART },
+		{ CPoint(195, 230), 0.3f, 0.35f, 0, ObjectType::GREEN_PART },
+		{ CPoint(300, 305), 0.2f, 0.35f, 90, ObjectType::GREEN_PART },
+		{ CPoint(370, 305), 0.2f, 0.35f, 45, ObjectType::GREEN_PART },
+		{ CPoint(370, 305), 0.2f, 0.35f, 135, ObjectType::GREEN_PART }
 	};
 	float all_obj_rot_angle = 0;
-	type_utils::element_group signle_object = {
-		std::vector<type_utils::cactus_element>{
-			{CPoint(100, 200), 0.5f, 0.5f, 45.0f, ObjectType::GREEN_PART},
-		},
-		CPoint(120, 220)
-	};
-
+	
 	const std::vector<CPoint> elipse_coords = {
 		{240, 343},
 		{185, 295},
