@@ -83,9 +83,9 @@ protected:
 		{ CPoint(250, 355), small_cactus, -45.0f, ObjectType::GREEN_PART },
 		{ CPoint(250, 355), small_cactus, 0, ObjectType::GREEN_PART },
 		{ CPoint(250, 355), small_cactus, 45.0f, ObjectType::GREEN_PART },
-		{ CPoint(195, 305), mid_cactus, -90.0f, ObjectType::GREEN_PART },
-		{ CPoint(195, 305), mid_cactus, 0, ObjectType::GREEN_PART },
-		{ CPoint(195, 230), big_cactus, 0, ObjectType::GREEN_PART },
+		{ CPoint(197, 307), mid_cactus, -90.0f, ObjectType::GREEN_PART },
+		{ CPoint(197, 307), mid_cactus, 0, ObjectType::GREEN_PART },
+		{ CPoint(197, 233), big_cactus, 0, ObjectType::GREEN_PART },
 		{ CPoint(300, 305), mid_cactus, 90, ObjectType::GREEN_PART },
 		{ CPoint(370, 305), mid_cactus, 45, ObjectType::GREEN_PART },
 		{ CPoint(370, 305), mid_cactus, 135, ObjectType::GREEN_PART }
@@ -94,10 +94,10 @@ protected:
 	
 	const std::vector<CPoint> elipse_coords = {
 		{240, 343},
-		{185, 295},
-		{185, 220},
+		{187, 297},
+		{187, 224},
 		{290, 295},
-		{362, 295}
+		{362, 297}
 	};
 	const int elipse_size = 20;
 	const float rot_angle = 6;

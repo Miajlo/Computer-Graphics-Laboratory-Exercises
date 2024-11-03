@@ -260,26 +260,26 @@ void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	bool redraw_requierd = false;
 
 	switch (nChar) {
-		case 0x47: //G
+		case 'G': //G
 			do_grid_draw = !do_grid_draw;
 			redraw_requierd = true;
 			break;
-		case 0x51: //q
+		case 'Q': //q
 			cactus_elements[0].angle -= rot_angle;
 			redraw_requierd = true;
 			break;
 
-		case 0x45: //e
+		case 'E': //e
 			cactus_elements[0].angle += rot_angle;
 			redraw_requierd = true;
 			break;
 
-		case 0x41: //a
+		case 'A': //a
 			all_obj_rot_angle -= rot_angle;
 			redraw_requierd = true;
 			break;
 
-		case 0x44: //d
+		case 'D': //d
 			all_obj_rot_angle += rot_angle;
 			redraw_requierd = true;
 			break;
