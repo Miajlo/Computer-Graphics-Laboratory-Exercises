@@ -12,14 +12,25 @@ enum class ObjectType {
 	YELLOW_PART,
 };
 
+struct scale {
+	float sx;
+	float sy;
+};
+
+
+const scale big_cactus = { 0.3f, 0.35f };
+const scale mid_cactus = { 0.2f, 0.35f };
+const scale small_cactus = { 0.1f, 0.35f };
+
 class cactus_element {
 public:
 	CPoint position;
-	float sx; //scale
-	float sy;
+	scale scale;
 	float angle;
 	ObjectType type;
 };
+
+
 
 class CIND18623View : public CView
 {
@@ -53,7 +64,7 @@ protected:
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 
 	bool do_grid_draw = false;
-
+	const bool right_mult = true;
 
 	std::vector<CPoint> trapezoid = { {210, 500}, {291, 500}, {300, 450}, {200, 450} };
 	std::vector<CPoint> rectangle = { {188,450}, {310, 430} };
@@ -68,17 +79,17 @@ protected:
 	const COLORREF FLOWER_POT_COLOR = RGB(222, 148, 0);
 
 	std::vector<cactus_element> cactus_elements = {
-		{ CPoint(300, 305), 0.2f, 0.35f, 0, ObjectType::YELLOW_PART },
-		{ CPoint(250, 425), 0.3f, 0.35f, 0, ObjectType::YELLOW_PART},
-		{ CPoint(250, 355), 0.1f, 0.35f, -45.0f, ObjectType::GREEN_PART },
-		{ CPoint(250, 355), 0.1f, 0.35f, 0, ObjectType::GREEN_PART },
-		{ CPoint(250, 355), 0.1f, 0.35f, 45.0f, ObjectType::GREEN_PART },
-		{ CPoint(195, 305), 0.2f, 0.35f, -90.0f, ObjectType::GREEN_PART },
-		{ CPoint(195, 305), 0.2f, 0.35f, 0, ObjectType::GREEN_PART },
-		{ CPoint(195, 230), 0.3f, 0.35f, 0, ObjectType::GREEN_PART },
-		{ CPoint(300, 305), 0.2f, 0.35f, 90, ObjectType::GREEN_PART },
-		{ CPoint(370, 305), 0.2f, 0.35f, 45, ObjectType::GREEN_PART },
-		{ CPoint(370, 305), 0.2f, 0.35f, 135, ObjectType::GREEN_PART }
+		{ CPoint(300, 305), mid_cactus, 0, ObjectType::YELLOW_PART },
+		{ CPoint(250, 425), big_cactus, 0, ObjectType::YELLOW_PART},
+		{ CPoint(250, 355), small_cactus, -45.0f, ObjectType::GREEN_PART },
+		{ CPoint(250, 355), small_cactus, 0, ObjectType::GREEN_PART },
+		{ CPoint(250, 355), small_cactus, 45.0f, ObjectType::GREEN_PART },
+		{ CPoint(195, 305), mid_cactus, -90.0f, ObjectType::GREEN_PART },
+		{ CPoint(195, 305), mid_cactus, 0, ObjectType::GREEN_PART },
+		{ CPoint(195, 230), big_cactus, 0, ObjectType::GREEN_PART },
+		{ CPoint(300, 305), mid_cactus, 90, ObjectType::GREEN_PART },
+		{ CPoint(370, 305), mid_cactus, 45, ObjectType::GREEN_PART },
+		{ CPoint(370, 305), mid_cactus, 135, ObjectType::GREEN_PART }
 	};
 	float all_obj_rot_angle = 0;
 	

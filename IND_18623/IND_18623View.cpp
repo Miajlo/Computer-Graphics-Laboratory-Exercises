@@ -96,9 +96,13 @@ void CIND18623View::draw_figure(CDC* pDC) {
 	CString yellow_path = _T("cactus_part_light.emf");
 	HENHMETAFILE yellow_part = GetEnhMetaFile(yellow_path);
 
+	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED); //set so transformations work
+
 	draw_cactus_elements(pDC, green_part, yellow_part);
 
 	draw_elipses(pDC);
+
+	pDC->SetGraphicsMode(old_mode); // return old graphic mode
 
 	CBrush nova_ceta(ELIPSE_COLOR);
 	auto old_brush = pDC->SelectObject(&nova_ceta);
@@ -106,13 +110,11 @@ void CIND18623View::draw_figure(CDC* pDC) {
 	pDC->SelectObject(old_brush);
 
 	if (yellow_part){
-	
 		DeleteEnhMetaFile(yellow_part);
 		yellow_part = NULL; 
 	}
 	
 	if (green_part) {
-
 		DeleteEnhMetaFile(yellow_part);
 		green_part = NULL;
 	}
@@ -123,7 +125,7 @@ void CIND18623View::draw_elipses(CDC* pDC) {
 	CBrush nova_ceta(ELIPSE_COLOR);
 	auto old_brush = pDC->SelectObject(&nova_ceta);
 	
-	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
+	
 	XFORM old_transform;
 	pDC->GetWorldTransform(&old_transform);
 	bool right_mult = true;
@@ -139,21 +141,23 @@ void CIND18623View::draw_elipses(CDC* pDC) {
 	}
 
 	pDC->SelectObject(old_brush);
-	pDC->SetGraphicsMode(old_mode);
+	
 }
 
 void CIND18623View::draw_cactus_elements(CDC* pDC, HENHMETAFILE& green_part, HENHMETAFILE& yellow_part) {
-	int old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
 	XFORM old_transform;
 	pDC->GetWorldTransform(&old_transform);
-	bool right_mult = true;
 
 	for (const auto& elem : cactus_elements) {
-		scale(pDC, elem.sx, elem.sy, right_mult);
+		scale(pDC, elem.scale.sx, elem.scale.sy, right_mult);
+
 		rotate(pDC, elem.angle, right_mult);
+
 		translate(pDC, elem.position.x - all_rot_point.x,
 			elem.position.y - all_rot_point.y, right_mult);
+
 		rotate(pDC, all_obj_rot_angle, right_mult);
+
 		translate(pDC, all_rot_point.x, all_rot_point.y, right_mult);
 
 		pDC->PlayMetaFile(elem.type == ObjectType::GREEN_PART ?
@@ -163,7 +167,6 @@ void CIND18623View::draw_cactus_elements(CDC* pDC, HENHMETAFILE& green_part, HEN
 
 		pDC->SetWorldTransform(&old_transform);
 	}
-	pDC->SetGraphicsMode(old_mode);
 }
 
 void CIND18623View::translate(CDC* pDC, float dX, float dY, bool right_multiply) {
