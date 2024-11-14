@@ -119,24 +119,115 @@ void CIND18623View::OnDraw(CDC* pDC)
 	XFORM old_transform;
 	pDC->GetWorldTransform(&old_transform);
 
-	translate(pDC, -158, -158, right_mult);
-	rotate(pDC, 200, right_mult);
-	//mirror(pDC, false, false, true);
-	translate(pDC, 158, 158, right_mult);
+	translate(pDC, -220, -180, right_mult);
+	rotate(pDC,109, right_mult);
+	
+	mirror(pDC, true,false, right_mult);
+	translate(pDC, 25, 7, right_mult);
 
 
 	DImage part1;
 	
 	part1.Load(_T("res\\Mon_0_0.bmp"));
-	CRect rect(0,0, 256,256);
+	CRect rect(0 ,0, 256,256);
 	auto btm = part1.GetBitmap();
 	COLORREF color = RGB(0, 255, 0);
-	bitmap_make_transparent(part1, color, pDC);
-	/*DImage part1_trans(*btn_trans);
-	
-	part1_trans.Draw(pDC, rect, CRect(30,30, 286, 286));*/
+	DrawTransparentImage(part1, pDC, rect, rect, color);
+		
+	//part1_trans.Draw(pDC, rect, CRect(30,30, 286, 286));
 	pDC->SetWorldTransform(&old_transform);
+	
+	translate(pDC, -32, -87, right_mult);
+	rotate(pDC, 17, right_mult);
+	mirror(pDC, false, true, right_mult);
+	translate(pDC, 318, 8, right_mult);
+
+
+	DImage part2;
+
+	part2.Load(_T("res\\Mon_0_1.bmp"));
+	DrawTransparentImage(part2, pDC, rect, rect, color);
+	pDC->SetWorldTransform(&old_transform);
+
+	
+	translate(pDC, -90, -230, right_mult);
+	rotate(pDC, 115, right_mult);
+	mirror(pDC, false, true, right_mult);
+	translate(pDC, 465, 10, right_mult);
+
+
+	DImage part3;
+
+	part3.Load(_T("res\\Mon_0_2.bmp"));
+	DrawTransparentImage(part3, pDC, rect, rect, color);
+	pDC->SetWorldTransform(&old_transform);
+
+	translate(pDC, -223, -175, right_mult);
+	rotate(pDC, 203, right_mult);
+	mirror(pDC, true, false, right_mult);
+	translate(pDC, 22, 307, right_mult);
+
+
+	DImage part4;
+
+	part4.Load(_T("res\\Mon_1_0.bmp"));
+	DrawTransparentImage(part4, pDC, rect, rect, color);
+	pDC->SetWorldTransform(&old_transform);
+
+		
+	translate(pDC, -150, -240, right_mult);
+	rotate(pDC, -32, right_mult);
+	mirror(pDC, false, true, right_mult);
+	translate(pDC, 169, 307, right_mult);
+
+
+	DImage part5;
+
+	part5.Load(_T("res\\Mon_1_1.bmp"));
+	DrawTransparentImage(part5, pDC, rect, rect, color);
+	pDC->SetWorldTransform(&old_transform);
+
+	translate(pDC, -150, -240, right_mult);
+	rotate(pDC, 145, right_mult);
+	mirror(pDC, false, true, right_mult);
+	translate(pDC, 475, 160, right_mult);
+
+
+	DImage part6;
+
+	part6.Load(_T("res\\Mon_1_2.bmp"));
+	DrawTransparentImage(part6, pDC, rect, rect, color);
+	pDC->SetWorldTransform(&old_transform);
+
 	pDC->SetGraphicsMode(old_mode);
+
+
+}
+
+
+void CIND18623View::DrawTransparentImage(DImage& img, CDC* pDC, CRect rcImg, CRect rcDC, COLORREF clrTransparent) {
+	// Create a memory device context (DC) compatible with the destination DC.
+	CDC* pMemDC = new CDC();
+	if (!pMemDC->CreateCompatibleDC(pDC)) {
+		delete pMemDC;
+		return; // Return if creation failed
+	}
+
+	// Select the bitmap into the memory DC.
+	pMemDC->SelectObject(img.GetBitmap()); // Use the bitmap from DImage
+
+	// Set the stretching mode for the destination DC to HALFTONE.
+	pDC->SetStretchBltMode(HALFTONE); // Smooth the bitmap during stretching
+
+	// Perform the TransparentBlt operation to copy the image to the destination.
+	// TransparentBlt takes in the destination rect, source rect, and the transparent color.
+	pDC->TransparentBlt(rcDC.left, rcDC.top,
+		rcDC.Width(), rcDC.Height(),
+		pMemDC, rcImg.left, rcImg.top,
+		rcImg.Width(), rcImg.Height(),
+		clrTransparent);
+
+	delete pMemDC;
 }
 
 // CIND18623View printing
@@ -200,8 +291,6 @@ CBitmap* CIND18623View::bitmap_make_transparent(DImage& img, COLORREF transparen
 	pDC->BitBlt(0, 0, bm.bmWidth, bm.bmHeight, memDC, 0, 0, SRCPAINT);
 	memDC->SelectObject(bmp_old);
 	delete memDC;
-
-	return nullptr;
 }
 
 

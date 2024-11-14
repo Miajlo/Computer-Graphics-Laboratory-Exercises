@@ -6,6 +6,7 @@
 #include<memory>
 #include <afxwin.h>  // Ensure MFC headers are included for CDC and CBitmap
 #include"DImage.h"
+#include<vector>
 
 class CIND18623View : public CView
 {
@@ -19,7 +20,9 @@ public:
 	XFORM trans_matrix;
 	float center_rot_angle;
 	bool right_mult = true;
-
+	std::vector<DImage> puzzle_parts;
+	const int cols = 3;
+	const int rows = 3;
 // Operations
 public:
 	void rotate(CDC *pDC,float angle, bool right_mult);
@@ -37,6 +40,8 @@ protected:
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 
 	CBitmap* bitmap_make_transparent(DImage& img, COLORREF transparentColor, CDC* pDC);
+
+	void DrawTransparentImage(DImage& img, CDC* pDC, CRect rcImg, CRect rcDC, COLORREF clrTransparent);
 
 // Implementation
 public:
