@@ -1,1 +1,1 @@
-"RGLab2" 
+"Comuper Graphics course repo" 
