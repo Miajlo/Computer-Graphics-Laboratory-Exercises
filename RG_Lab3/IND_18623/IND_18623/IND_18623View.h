@@ -3,7 +3,9 @@
 //
 
 #pragma once
-
+#include<memory>
+#include <afxwin.h>  // Ensure MFC headers are included for CDC and CBitmap
+#include"DImage.h"
 
 class CIND18623View : public CView
 {
@@ -14,15 +16,17 @@ protected: // create from serialization only
 // Attributes
 public:
 	CIND18623Doc* GetDocument() const;
-	XFORM transfom_matrix;
+	XFORM trans_matrix;
 	float center_rot_angle;
+	bool right_mult = true;
 
 // Operations
 public:
-	void rotate(float angle, bool right_mult);
-	void scale(float sx, float sy, bool right_mult);
-	void translate(float dx, float dy, bool right_mult);
-	void mirror(bool right_mult);
+	void rotate(CDC *pDC,float angle, bool right_mult);
+	void scale(CDC *pDC, float sx, float sy, bool right_mult);
+	void translate(CDC* pDC, float dx, float dy, bool right_mult);
+	void mirror(CDC* pDC, bool mx, bool my,bool right_mult);
+
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
@@ -31,6 +35,8 @@ protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
+
+	CBitmap* bitmap_make_transparent(DImage& img, COLORREF transparentColor, CDC* pDC);
 
 // Implementation
 public:

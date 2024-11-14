@@ -3,8 +3,7 @@
 
 #define DIB_HEADER_MARKER   ((WORD) ('M' << 8) | 'B')
 
-class DImage
-{
+class DImage {
 public:
 	DImage(void);
 	DImage(CBitmap& bmp);
