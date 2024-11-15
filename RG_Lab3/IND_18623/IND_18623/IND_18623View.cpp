@@ -177,60 +177,87 @@ void CIND18623View::OnDraw(CDC* pDC)
 
 
 void CIND18623View::DrawTransparentImage(DImage& img, CDC* pDC, CRect &rcImg, CRect &rcDC, COLORREF &clrTransparent, const bool &blue_filter) {
-	// Create a memory device context (DC) compatible with the destination DC.
-	CDC* pMemDC = new CDC();
-	if (!pMemDC->CreateCompatibleDC(pDC)) {
-		delete pMemDC;
-		return; // Return if creation failed
+	// Retrieve the bitmap from the image
+	CBitmap* pBitmap = img.GetBitmap();
+	if (!pBitmap) {
+		return; // Return if the bitmap is invalid
 	}
 
-	pMemDC->SelectObject(img.GetBitmap()); // Use the bitmap from DImage
+	// Get bitmap information
+	BITMAP bmp;
+	pBitmap->GetBitmap(&bmp);
 
-	
-	for (int y = 0; y < rcImg.Height(); y++) {
-		for (int x = 0; x < rcImg.Width(); x++) {
-			COLORREF color = pMemDC->GetPixel(x, y);
+	// Calculate the size of the bitmap data
+	int dataSize = bmp.bmWidthBytes * bmp.bmHeight;
+
+	// Allocate memory to hold the bitmap data
+	std::vector<BYTE> bitmapData(dataSize);
+
+	// Get the bitmap bits
+	if (pBitmap->GetBitmapBits(dataSize, bitmapData.data()) == 0) {
+		return; // Failed to retrieve bitmap bits
+	}
+
+	// Modify the bitmap bits
+	for (int y = 0; y < bmp.bmHeight; ++y) {
+		for (int x = 0; x < bmp.bmWidth; ++x) {
+			// Calculate the pixel's byte offset
+			int pixelOffset = y * bmp.bmWidthBytes + x * (bmp.bmBitsPixel / 8);
+
+			// Extract pixel color (assuming 24-bit RGB format)
+			BYTE blue = bitmapData[pixelOffset];
+			BYTE green = bitmapData[pixelOffset + 1];
+			BYTE red = bitmapData[pixelOffset + 2];
+
+			COLORREF color = RGB(red, green, blue);
+
 			if (color != clrTransparent) {
-				auto pixel = pMemDC->GetPixel(x,y);
-				auto R = GetRValue(pixel);
-				auto G = GetGValue(pixel);
-				auto B = GetBValue(pixel);
-
-				COLORREF new_color;
+				int newRed = 0, newGreen = 0, newBlue = 0;
 
 				if (blue_filter) {
-					auto blue = 64 + B;
-					blue = blue > 255 ? 255 : blue;
-					new_color = RGB(0, 0, blue);
+					newBlue = 64 + blue;
+					newBlue = newBlue > 255 ? 255 : newBlue;
 				}
 				else {
-					auto gr = 64 + (R + G + B) / 3;
-					gr = gr > 255 ? 255 : gr;
-					new_color = RGB(gr, gr, gr);
+					auto gray = 64 + (red + green + blue) / 3;
+					gray = gray > 255 ? 255 : gray;
+					newRed = newGreen = newBlue = gray;
 				}
 
-
-				pMemDC->SetPixel(x, y, new_color);
-
+				// Set the new pixel color
+				bitmapData[pixelOffset] = newBlue;
+				bitmapData[pixelOffset + 1] = newGreen;
+				bitmapData[pixelOffset + 2] = newRed;
 			}
 		}
 	}
 
-	// Select the bitmap into the memory DC.
-	
+	// Set the modified bits back to the bitmap
+	if (pBitmap->SetBitmapBits(dataSize, bitmapData.data()) == 0) {
+		return; // Failed to set bitmap bits
+	}
 
-	// Set the stretching mode for the destination DC to HALFTONE.
+	// Create a memory DC for the bitmap
+	CDC memDC;
+	if (!memDC.CreateCompatibleDC(pDC)) {
+		return; // Failed to create compatible DC
+	}
+
+	// Select the bitmap into the memory DC
+	CBitmap* pOldBitmap = memDC.SelectObject(pBitmap);
+
+	// Set the stretching mode for the destination DC to HALFTONE
 	pDC->SetStretchBltMode(HALFTONE); // Smooth the bitmap during stretching
 
-	// Perform the TransparentBlt operation to copy the image to the destination.
-	// TransparentBlt takes in the destination rect, source rect, and the transparent color.
+	// Perform the TransparentBlt operation to copy the image to the destination
 	pDC->TransparentBlt(rcDC.left, rcDC.top,
 		rcDC.Width(), rcDC.Height(),
-		pMemDC, rcImg.left, rcImg.top,
+		&memDC, rcImg.left, rcImg.top,
 		rcImg.Width(), rcImg.Height(),
 		clrTransparent);
 
-	delete pMemDC;
+	// Restore the old bitmap in the memory DC
+	memDC.SelectObject(pOldBitmap);
 }
 
 // CIND18623View printing
