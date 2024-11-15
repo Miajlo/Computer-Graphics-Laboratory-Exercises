@@ -57,8 +57,7 @@ public:
 	void scale(CDC *pDC, float sx, float sy, bool right_mult);
 	void translate(CDC* pDC, float dx, float dy, bool right_mult);
 	void mirror(CDC* pDC, bool mx, bool my,bool right_mult);
-	void load_puzzle();
-	void draw_puzzle(CDC* pDC);
+
 
 // Overrides
 public:

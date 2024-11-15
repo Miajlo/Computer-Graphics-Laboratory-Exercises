@@ -108,35 +108,6 @@ void CIND18623View::mirror(CDC* pDC, bool mx, bool my, bool right_mult) {
 	pDC->ModifyWorldTransform(&trans_matrix, right_mult ? MWT_RIGHTMULTIPLY : MWT_LEFTMULTIPLY);
 }
 
-void CIND18623View::load_puzzle() {
-
-	for (auto i = 0; i < rows; ++i) {
-		std::vector<DImage> row_to_add;
-		for (auto j = 0; j < cols; ++j) {
-			DImage tmp;
-			std::ostringstream oss;
-			oss << bitmaps_base << i << '_' << j << ".bmp";
-			tmp.Load(CString(oss.str().c_str()));
-			row_to_add.push_back(tmp);
-		}
-		puzzle_parts.push_back(row_to_add);
-	}
-
-}
-
-void CIND18623View::draw_puzzle(CDC* pDC) {
-
-	for (auto i = 0; i < rows; ++i) {
-		for (auto j = 0; j < cols; ++j) {
-
-		}
-	}
-
-}
-
-
-
-
 void CIND18623View::OnDraw(CDC* pDC)
 {
 	CIND18623Doc* pDoc = GetDocument();
