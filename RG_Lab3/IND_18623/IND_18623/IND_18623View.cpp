@@ -33,6 +33,7 @@ BEGIN_MESSAGE_MAP(CIND18623View, CView)
 	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
+	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 // CIND18623View construction/destruction
@@ -115,34 +116,51 @@ void CIND18623View::OnDraw(CDC* pDC)
 	if (!pDoc)
 		return;
 
-	auto old_mode = pDC->SetGraphicsMode(GM_ADVANCED);
-	XFORM old_transform;
-	pDC->GetWorldTransform(&old_transform);
+	
 	COLORREF color(RGB(0, 255, 0));
 	CRect rect(0, 0, 256, 256);
+	CRect img_rect(0, 0, 500, 500);
+	CDC memDC;
+	if (!memDC.CreateCompatibleDC(pDC))
+		return;
+
+	CBitmap memBitmap;
+	memBitmap.CreateCompatibleBitmap(pDC, img_rect.Width(), img_rect.Height());
+	memDC.SelectObject(&memBitmap);
+
+	// Fill the memory DC with white background
+	memDC.FillSolidRect(0, 0, img_rect.Width(), img_rect.Height(), RGB(255, 255, 255));
+
+	auto old_mode = memDC.SetGraphicsMode(GM_ADVANCED);
+	XFORM old_transform;
+	memDC.GetWorldTransform(&old_transform);
+
+
 	for (const auto& part : imageParts) {
-		translate(pDC, part.translate1.x, part.translate1.y, right_mult);
-		rotate(pDC, part.rotationAngle, right_mult);
-		mirror(pDC, part.mirrorX, part.mirrorY, right_mult);
-		translate(pDC, part.translate2.x, part.translate2.y, right_mult);
+		translate(&memDC, part.translate1.x, part.translate1.y, right_mult);
+		rotate(&memDC, part.rotationAngle, right_mult);
+		mirror(&memDC, part.mirrorX, part.mirrorY, right_mult);
+		translate(&memDC, part.translate2.x, part.translate2.y, right_mult);
 
 		if (center_rot_angle) {
-			translate(pDC, -rot_center.x, -rot_center.y, right_mult);
-			rotate(pDC, center_rot_angle, right_mult);
-			translate(pDC, rot_center.x, rot_center.y, right_mult);
+			translate(&memDC, -rot_center.x, -rot_center.y, right_mult);
+			rotate(&memDC, center_rot_angle, right_mult);
+			translate(&memDC, rot_center.x, rot_center.y, right_mult);
 		}
 
 		// Load and draw the image
 		DImage image;
 		image.Load(part.imagePath);
-		DrawTransparentImage(image, pDC, rect, rect, color, part.blue_filter);
+		DrawTransparentImage(image, &memDC, rect, rect, color, part.blue_filter);
 
 		// Restore the original transformation
-		pDC->SetWorldTransform(&old_transform);
+		memDC.SetWorldTransform(&old_transform);
 	}
 
-	pDC->SetGraphicsMode(old_mode);
+	pDC->BitBlt(0, 0, 500, 500, &memDC, 0, 0, SRCCOPY);
 
+	memDC.SetGraphicsMode(old_mode);
+	memDC.DeleteDC();
 
 }
 
@@ -217,10 +235,10 @@ void CIND18623View::DrawTransparentImage(DImage& img, CDC* pDC, CRect &rcImg, CR
 	// Select the bitmap into the memory DC
 	CBitmap* pOldBitmap = memDC.SelectObject(pBitmap);
 
-	// Set the stretching mode for the destination DC to HALFTONE
+	
 	pDC->SetStretchBltMode(HALFTONE); // Smooth the bitmap during stretching
 
-	// Perform the TransparentBlt operation to copy the image to the destination
+	
 	pDC->TransparentBlt(rcDC.left, rcDC.top,
 		rcDC.Width(), rcDC.Height(),
 		&memDC, rcImg.left, rcImg.top,
@@ -321,3 +339,17 @@ CIND18623Doc* CIND18623View::GetDocument() const // non-debug version is inline
 
 
 // CIND18623View message handlers
+
+
+void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	switch (nChar) {
+	case 'R':
+		Invalidate();
+		break;
+	default:
+		break;
+	}
+
+	CView::OnKeyDown(nChar, nRepCnt, nFlags);
+}
