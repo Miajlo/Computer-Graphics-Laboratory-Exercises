@@ -109,14 +109,7 @@ void CIND18623View::mirror(CDC* pDC, bool mx, bool my, bool right_mult) {
 	pDC->ModifyWorldTransform(&trans_matrix, right_mult ? MWT_RIGHTMULTIPLY : MWT_LEFTMULTIPLY);
 }
 
-void CIND18623View::OnDraw(CDC* pDC)
-{
-	CIND18623Doc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	if (!pDoc)
-		return;
-
-	
+void CIND18623View::draw_img(CDC* pDC) {
 	COLORREF color(RGB(0, 255, 0));
 	CRect rect(0, 0, 256, 256);
 	CRect img_rect(0, 0, 500, 500);
@@ -135,32 +128,50 @@ void CIND18623View::OnDraw(CDC* pDC)
 	XFORM old_transform;
 	memDC.GetWorldTransform(&old_transform);
 
+	for (int i = 0; i < imageParts.size(); ++i) {
+		for (int j = 0; j < imageParts[i].size(); ++j) {
+			auto part = imageParts[i][j];
 
-	for (const auto& part : imageParts) {
-		translate(&memDC, part.translate1.x, part.translate1.y, right_mult);
-		rotate(&memDC, part.rotationAngle, right_mult);
-		mirror(&memDC, part.mirrorX, part.mirrorY, right_mult);
-		translate(&memDC, part.translate2.x, part.translate2.y, right_mult);
+			scale(&memDC, sx, sy, right_mult);
+			translate(&memDC, part.translate1.x, part.translate1.y, right_mult);
+			rotate(&memDC, part.rotationAngle, right_mult);
+			mirror(&memDC, part.mirrorX, part.mirrorY, right_mult);
+			translate(&memDC, part.translate2.x, part.translate2.y, right_mult);
 
-		if (center_rot_angle) {
-			translate(&memDC, -rot_center.x, -rot_center.y, right_mult);
-			rotate(&memDC, center_rot_angle, right_mult);
-			translate(&memDC, rot_center.x, rot_center.y, right_mult);
+			if (center_rot_angle) {
+				translate(&memDC, -rot_center.x, -rot_center.y, right_mult);
+				rotate(&memDC, center_rot_angle, right_mult);
+				translate(&memDC, rot_center.x, rot_center.y, right_mult);
+			}
+
+			std::string path = path_base + std::to_string(i) +
+				'_' + std::to_string(j) + file_ext;
+
+			// Load and draw the image
+			DImage image;
+			image.Load(CString(path.c_str()));
+			DrawTransparentImage(image, &memDC, rect, rect, color, part.blue_filter);
+
+			// Restore the original transformation
+			memDC.SetWorldTransform(&old_transform);
+
 		}
-
-		// Load and draw the image
-		DImage image;
-		image.Load(part.imagePath);
-		DrawTransparentImage(image, &memDC, rect, rect, color, part.blue_filter);
-
-		// Restore the original transformation
-		memDC.SetWorldTransform(&old_transform);
 	}
 
 	pDC->BitBlt(0, 0, 500, 500, &memDC, 0, 0, SRCCOPY);
 
 	memDC.SetGraphicsMode(old_mode);
 	memDC.DeleteDC();
+}
+
+void CIND18623View::OnDraw(CDC* pDC)
+{
+	CIND18623Doc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)
+		return;
+
+	draw_img(pDC);
 
 }
 
@@ -172,6 +183,7 @@ void CIND18623View::DrawTransparentImage(DImage& img, CDC* pDC, CRect &rcImg, CR
 		return; // Return if the bitmap is invalid
 	}
 
+	
 	// Get bitmap information
 	BITMAP bmp;
 	pBitmap->GetBitmap(&bmp);
@@ -204,12 +216,10 @@ void CIND18623View::DrawTransparentImage(DImage& img, CDC* pDC, CRect &rcImg, CR
 				int newRed = 0, newGreen = 0, newBlue = 0;
 
 				if (blue_filter) {
-					newBlue = 64 + blue;
-					newBlue = newBlue > 255 ? 255 : newBlue;
+					newBlue = std::min<int>(64 + blue, 255);
 				}
 				else {
-					auto gray = 64 + (red + green + blue) / 3;
-					gray = gray > 255 ? 255 : gray;
+					auto gray = std::min<int>(64 + (red + green + blue) / 3,255);
 					newRed = newGreen = newBlue = gray;
 				}
 
@@ -345,7 +355,7 @@ void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	switch (nChar) {
 	case 'R':
-		Invalidate();
+		UpdateWindow();
 		break;
 	default:
 		break;
