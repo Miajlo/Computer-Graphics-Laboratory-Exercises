@@ -31,7 +31,7 @@ protected: // create from serialization only
 public:
 	CIND18623Doc* GetDocument() const;
 	XFORM trans_matrix;
-	float center_rot_angle = 0;
+	float center_rot_angle = -90;
 	const CPoint rot_center = { 250, 250 };
 	bool right_mult = true;
 	bool first_time = true;
