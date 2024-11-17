@@ -269,12 +269,13 @@ void CIND18623View::DrawTransparentImage(DImage& img, CDC* pDC, CRect &rcImg, CR
 	
 	pDC->SetStretchBltMode(HALFTONE); // Smooth the bitmap during stretching
 
+	pDC->SetBrushOrg(0, 0);
 	
 	pDC->TransparentBlt(rcDC.left, rcDC.top,
-		rcDC.Width(), rcDC.Height(),
-		&memDC, rcImg.left, rcImg.top,
-		rcImg.Width(), rcImg.Height(),
-		clrTransparent);
+						rcDC.Width(), rcDC.Height(),
+						&memDC, rcImg.left, rcImg.top,
+						rcImg.Width(), rcImg.Height(),
+						clrTransparent);
 
 	// Restore the old bitmap in the memory DC
 	memDC.SelectObject(pOldBitmap);
