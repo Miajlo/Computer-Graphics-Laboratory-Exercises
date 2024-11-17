@@ -31,10 +31,16 @@ protected: // create from serialization only
 public:
 	CIND18623Doc* GetDocument() const;
 	XFORM trans_matrix;
-	float center_rot_angle = -90;
+	float center_rot_angle = 0;
 	const CPoint rot_center = { 250, 250 };
 	bool right_mult = true;
 	bool first_time = true;
+	bool do_grid_draw = false;
+	const int grid_width = 500;
+	const int grid_height = 500;
+	const int grid_unit_size = 20;
+	const COLORREF GRID_COLOR = RGB(200, 200, 200);
+
 	const int sx = 1, sy = 1;
 	std::vector<std::vector<DImage>> puzzle_parts;
 
@@ -43,19 +49,19 @@ public:
 
 	std::vector<std::vector<ImagePart>> imageParts = {
 		{
-			{109, {-80, -235}, {20, 170}, true, false},
-			{17, {-33, -100}, {326, 34}, false, true},
-			{115, {-27, -100}, {321, 22}, false, true}
+			{109, {-80, -235}, {17, 170}, true, false},
+			{17, {-33, -100}, {323, 34}, false, true},
+			{115, {-27, -100}, {318, 22}, false, true}
 		},
 		{
-			{ 203, {-165, -37}, {23, 165}, true, false, true},
-			{ -32, {-100, -33}, {323, 167}, false, true},
-			{ 145, {-140, -240}, {466, 165}, false, true}
+			{ 203, {-165, -37}, {20, 165}, true, false, true},
+			{ -32, {-100, -33}, {320, 166}, false, true},
+			{ 145, {-140, -240}, {463, 164}, false, true}
 		},
 		{
-			{ 71, {-170, -230}, {173, 464}, false, true},
-			{ -18, {-76, -41}, {323, 315}, false, true},
-			{ 14, {-215, -189}, {468, 317}, true, false},
+			{ 71, {-170, -230}, {170, 463}, false, true},
+			{ -18, {-76, -41}, {320, 314}, false, true},
+			{ 14, {-215, -189}, {465, 316}, true, false},
 		}	
 	};
 // Operations
@@ -65,6 +71,7 @@ public:
 	void translate(CDC* pDC, float dx, float dy, bool right_mult);
 	void mirror(CDC* pDC, bool mx, bool my,bool right_mult);
 	void draw_img(CDC* pDC);
+	void draw_grid(CDC *pDC);
 
 // Overrides
 public:

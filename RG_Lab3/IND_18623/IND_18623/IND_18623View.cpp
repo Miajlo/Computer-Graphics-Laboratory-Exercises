@@ -112,7 +112,7 @@ void CIND18623View::mirror(CDC* pDC, bool mx, bool my, bool right_mult) {
 void CIND18623View::draw_img(CDC* pDC) {
 	COLORREF color(RGB(0, 255, 0));
 	CRect rect(0, 0, 256, 256);
-	CRect img_rect(0, 0, 500, 500);
+	CRect img_rect(0, 0, 510, 510);
 	CDC memDC;
 	if (!memDC.CreateCompatibleDC(pDC))
 		return;
@@ -127,6 +127,10 @@ void CIND18623View::draw_img(CDC* pDC) {
 	auto old_mode = memDC.SetGraphicsMode(GM_ADVANCED);
 	XFORM old_transform;
 	memDC.GetWorldTransform(&old_transform);
+
+	if (do_grid_draw)
+		draw_grid(&memDC);
+
 
 	for (int i = 0; i < imageParts.size(); ++i) {
 		for (int j = 0; j < imageParts[i].size(); ++j) {
@@ -158,10 +162,27 @@ void CIND18623View::draw_img(CDC* pDC) {
 		}
 	}
 
-	pDC->BitBlt(0, 0, 500, 500, &memDC, 0, 0, SRCCOPY);
+	pDC->BitBlt(0, 0, img_rect.Width(), img_rect.Height(), &memDC, 0, 0, SRCCOPY);
 
 	memDC.SetGraphicsMode(old_mode);
 	memDC.DeleteDC();
+}
+
+void CIND18623View::draw_grid(CDC* pDC) {
+	CPen* OldPen;
+	CPen gridPen(BS_SOLID, 1, GRID_COLOR);
+	OldPen = pDC->SelectObject(&gridPen);
+
+	for (int i = 0; i <= grid_width / grid_unit_size; i++) {
+		pDC->MoveTo(grid_unit_size * i, 0);
+		pDC->LineTo(grid_unit_size * i, grid_height);
+	}
+	for (int i = 0; i <= grid_height / grid_unit_size; i++) {
+		pDC->MoveTo(0, grid_unit_size * i);
+		pDC->LineTo(grid_width, grid_unit_size * i);
+	}
+
+	pDC->SelectObject(OldPen);
 }
 
 void CIND18623View::OnDraw(CDC* pDC)
@@ -356,6 +377,10 @@ void CIND18623View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	switch (nChar) {
 	case 'R':
 		UpdateWindow();
+		break;
+	case 'G':
+		do_grid_draw = !do_grid_draw;
+		Invalidate();
 		break;
 	default:
 		break;
