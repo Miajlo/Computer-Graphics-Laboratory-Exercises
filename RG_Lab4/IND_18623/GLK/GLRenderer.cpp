@@ -1,0 +1,307 @@
+#include "StdAfx.h"
+#include "GLRenderer.h"
+#include "GL\gl.h"
+#include "GL\glu.h"
+#include "GL\glaux.h"
+#include "GL\glut.h"
+#include<cmath>
+#include<corecrt_math_defines.h>
+//#pragma comment(lib, "GL\\glut32.lib")
+
+CGLRenderer::CGLRenderer(void)
+{
+}
+
+CGLRenderer::~CGLRenderer(void)
+{
+}
+
+bool CGLRenderer::CreateGLContext(CDC* pDC)
+{
+	PIXELFORMATDESCRIPTOR pfd ;
+   	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+   	pfd.nSize  = sizeof(PIXELFORMATDESCRIPTOR);
+   	pfd.nVersion   = 1; 
+   	pfd.dwFlags    = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;   
+   	pfd.iPixelType = PFD_TYPE_RGBA; 
+   	pfd.cColorBits = 32;
+   	pfd.cDepthBits = 24; 
+   	pfd.iLayerType = PFD_MAIN_PLANE;
+	
+	int nPixelFormat = ChoosePixelFormat(pDC->m_hDC, &pfd);
+	
+	if (nPixelFormat == 0) return false; 
+
+	BOOL bResult = SetPixelFormat (pDC->m_hDC, nPixelFormat, &pfd);
+  	
+	if (!bResult) return false; 
+
+   	m_hrc = wglCreateContext(pDC->m_hDC); 
+
+	if (!m_hrc) return false; 
+
+	return true;	
+}
+
+void CGLRenderer::PrepareScene(CDC *pDC)
+{
+	wglMakeCurrent(pDC->m_hDC, m_hrc);
+	//---------------------------------
+
+    glClearColor(0.502, 0.753, 1.0f, 1.0f); // Black background
+    glEnable(GL_DEPTH_TEST); // Enable depth testing
+    glDepthFunc(GL_LEQUAL);  // Set depth function
+    glShadeModel(GL_SMOOTH); // Enable smooth shading
+	//---------------------------------
+	wglMakeCurrent(NULL, NULL);
+}
+
+void CGLRenderer::DrawScene(CDC *pDC)
+{
+    wglMakeCurrent(pDC->m_hDC, m_hrc);
+    //---------------------------------
+
+    // Clear the color and depth buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+    // Reset the model-view matrix
+    glLoadIdentity();
+
+    float lookX = sin(_Camera.pitch * M_PI / 180.0f);
+    float lookZ = -cos(_Camera.yawn * M_PI / 180.0f);
+    float lookY = sin(_Camera.yawn * M_PI / 180.0f);
+
+
+
+
+    gluLookAt(_Camera.X, _Camera.Y, _Camera.Z,                     // Camera position
+        _Camera.X + lookX, _Camera.Y + lookY, _Camera.Z + lookZ, // Look-at point
+        0.0f, 1.0f, 0.0f);
+
+    // Translate the scene to move the triangle into view
+    // Move 5 units into the screen (negative Z direction)
+    //glTranslatef(0.0f, 0.0f, -5.0f);
+    
+
+    DrawAxis(20);
+
+    glColor3f(1.0, 1.0, 1.0);
+
+    DrawGrid(10.0, 10.0, 10, 10);
+
+
+
+
+    DrawFigure(0);
+
+
+
+
+
+    // Swap the front and back buffers to display the rendered image
+    SwapBuffers(pDC->m_hDC);
+    //---------------------------------
+
+    // Release the OpenGL context
+    wglMakeCurrent(NULL, NULL);
+}
+
+void CGLRenderer::Reshape(CDC *pDC, int w, int h)
+{
+	wglMakeCurrent(pDC->m_hDC, m_hrc);
+	//---------------------------------
+    if (h == 0) h = 1; // Prevent divide by zero
+
+    glViewport(0, 0, w, h); // Set the viewport
+
+    glMatrixMode(GL_PROJECTION); // Switch to projection matrix
+    glLoadIdentity(); // Reset projection matrix
+    gluPerspective(45.0, (GLdouble)w / (GLdouble)h, 1.0, 100.0); // Perspective projection
+
+    glMatrixMode(GL_MODELVIEW); // Switch back to model-view matrix
+    glLoadIdentity(); // Reset model-view matrix
+	//---------------------------------
+	wglMakeCurrent(NULL, NULL);
+}
+
+void CGLRenderer::DestroyScene(CDC *pDC)
+{
+	wglMakeCurrent(pDC->m_hDC, m_hrc);
+	// ... 
+	wglMakeCurrent(NULL,NULL); 
+	if(m_hrc) 
+	{
+		wglDeleteContext(m_hrc);
+		m_hrc = NULL;
+	}
+}
+
+void CGLRenderer::DrawSphere(double r, int nSegAlpha, int nSegBeta) {
+
+    for (int i = 0; i < nSegAlpha; i++)
+    {
+        // Calculate latitude angles
+        double alpha1 = M_PI * (-0.5 + (double)(i) / nSegAlpha);
+        double alpha2 = M_PI * (-0.5 + (double)(i + 1) / nSegAlpha);
+
+        double sinAlpha1 = sin(alpha1), cosAlpha1 = cos(alpha1);
+        double sinAlpha2 = sin(alpha2), cosAlpha2 = cos(alpha2);
+
+        glBegin(GL_QUAD_STRIP);
+        for (int j = 0; j <= nSegBeta; j++)
+        {
+            // Calculate longitude angle
+            double beta = 2.0 * M_PI * (double)(j) / nSegBeta;
+            double sinBeta = sin(beta), cosBeta = cos(beta);
+
+            // Vertices
+            double x1 = r * cosAlpha1 * cosBeta;
+            double y1 = r * sinAlpha1;
+            double z1 = r * cosAlpha1 * sinBeta;
+
+            double x2 = r * cosAlpha2 * cosBeta;
+            double y2 = r * sinAlpha2;
+            double z2 = r * cosAlpha2 * sinBeta;
+
+            glVertex3d(x1, y1, z1);
+            glVertex3d(x2, y2, z2);
+        }
+        glEnd();
+    }
+
+}
+
+void CGLRenderer::DrawCylinder(double h, double r1, double r2, int nSeg) {
+    double angleStep = 2.0 * M_PI / nSeg;
+
+    // Draw the sides of the cylinder
+    glBegin(GL_QUAD_STRIP);
+    for (int i = 0; i <= nSeg; i++)
+    {
+        double angle = i * angleStep;
+        double x = cos(angle);
+        double z = sin(angle);
+
+        // Bottom circle vertex
+        glVertex3d(r1 * x, 0.0, r1 * z);
+
+        // Top circle vertex
+        glVertex3d(r2 * x, h, r2 * z);
+    }
+    glEnd();
+
+    // Draw the bottom base
+    if (r1 > 0)
+    {
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex3d(0.0, 0.0, 0.0); // Center of the bottom base
+        for (int i = 0; i <= nSeg; i++)
+        {
+            double angle = i * angleStep;
+            double x = cos(angle);
+            double z = sin(angle);
+            glVertex3d(r1 * x, 0.0, r1 * z);
+        }
+        glEnd();
+    }
+
+    // Draw the top base
+    if (r2 > 0)
+    {
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex3d(0.0, h, 0.0); // Center of the top base
+        for (int i = 0; i <= nSeg; i++)
+        {
+            double angle = i * angleStep;
+            double x = cos(angle);
+            double z = sin(angle);
+            glVertex3d(r2 * x, h, r2 * z);
+        }
+        glEnd();
+    }
+}
+
+void CGLRenderer::DrawCone(double h, double r, int nSeg) {
+    double angleStep = 2.0 * M_PI / nSeg;
+
+    // Draw the sides of the cone
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3d(0.0, h, 0.0); // Apex of the cone
+    for (int i = 0; i <= nSeg; i++) {
+        double angle = i * angleStep;
+        double x = r * cos(angle);
+        double z = r * sin(angle);
+        glVertex3d(x, 0.0, z); // Base circle vertices
+    }
+    glEnd();
+
+    // Draw the base of the cone
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3d(0.0, 0.0, 0.0); // Center of the base
+    for (int i = 0; i <= nSeg; i++) {
+        double angle = i * angleStep;
+        double x = r * cos(angle);
+        double z = r * sin(angle);
+        glVertex3d(x, 0.0, z); // Base circle vertices
+    }
+    glEnd();
+}
+
+void CGLRenderer::DrawAxis(double width) {
+    glLineWidth(2.0); // Set line thickness
+
+    // Draw the X-axis in red
+    glColor3f(1.0f, 0.0f, 0.0f); // Red color
+    glBegin(GL_LINES);
+    glVertex3d(0.0, 0.0, 0.0); // Origin
+    glVertex3d(width, 0.0, 0.0); // End of the X-axis
+    glEnd();
+
+    // Draw the Y-axis in green
+    glColor3f(0.0f, 1.0f, 0.0f); // Green color
+    glBegin(GL_LINES);
+    glVertex3d(0.0, 0.0, 0.0); // Origin
+    glVertex3d(0.0, width, 0.0); // End of the Y-axis
+    glEnd();
+
+    // Draw the Z-axis in blue
+    glColor3f(0.0f, 0.0f, 1.0f); // Blue color
+    glBegin(GL_LINES);
+    glVertex3d(0.0, 0.0, 0.0); // Origin
+    glVertex3d(0.0, 0.0, width); // End of the Z-axis
+    glEnd();
+
+    glLineWidth(1.0); // Reset line thickness to default
+}
+
+void CGLRenderer::DrawGrid(double width, double height, int nSegW, int nSegH) {
+    double stepW = width / nSegW; // Step size for width
+    double stepH = height / nSegH; // Step size for height
+
+    //glColor3f(0.7f, 0.7f, 0.7f); // Light gray color for the grid lines
+
+    glBegin(GL_LINES);
+    // Draw vertical lines (parallel to Z-axis)
+    for (int i = 0; i <= nSegW; i++) {
+        double x = -width / 2.0 + i * stepW;
+        glVertex3d(x, 0.0, -height / 2.0); // Start point
+        glVertex3d(x, 0.0, height / 2.0);  // End point
+    }
+
+    // Draw horizontal lines (parallel to X-axis)
+    for (int j = 0; j <= nSegH; j++) {
+        double z = -height / 2.0 + j * stepH;
+        glVertex3d(-width / 2.0, 0.0, z); // Start point
+        glVertex3d(width / 2.0, 0.0, z);  // End point
+    }
+    glEnd();
+}
+
+void CGLRenderer::DrawFigure(double angle) {
+
+    glColor3f(0.8667f, 0.4941f, 0.1176f);
+
+    DrawCylinder(1.5, 1, 1.5, 6);
+
+}
