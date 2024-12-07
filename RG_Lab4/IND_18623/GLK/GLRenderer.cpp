@@ -75,9 +75,11 @@ void CGLRenderer::DrawScene(CDC *pDC)
 
 
 
-    gluLookAt(_Camera.X, _Camera.Y, _Camera.Z,                     // Camera position
-        _Camera.X + lookX, _Camera.Y + lookY, _Camera.Z + lookZ, // Look-at point
-        0.0f, 1.0f, 0.0f);
+    gluLookAt(
+        20.0f, _Camera.Y, _Camera.Z,      // Camera position at (5.0, Y, Z)
+        4.0f, _Camera.Y, _Camera.Z,      // Look-at point along negative X-axis
+        0.0f, 1.0f, 0.0f                 // Up vector remains along Y-axis
+    );
 
     // Translate the scene to move the triangle into view
     // Move 5 units into the screen (negative Z direction)
@@ -301,6 +303,7 @@ void CGLRenderer::DrawGrid(double width, double height, int nSegW, int nSegH) {
 void CGLRenderer::DrawFigure(double angle) {
 
     Color pot_clr(0.8667f, 0.4941f, 0.1176f), dark_green(0.0, 0.67f, 0.0f), light_green(0,1,0);
+    Color yellow(1.0f, 1.0f, 0.0f);
     float r = 0.5, cyl_h = 2.2, bcyl_h;
     int sph_seg = 30;
 
@@ -326,7 +329,7 @@ void CGLRenderer::DrawFigure(double angle) {
     DrawSphere(r, 30, sph_seg);
 
     glPushMatrix();
-    glRotatef(45.0f, 0.0f, 0.0f, 1.0f);
+    glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
 
     glTranslatef(0, r, 0);
 
@@ -358,7 +361,61 @@ void CGLRenderer::DrawFigure(double angle) {
     glPopMatrix();
     glPushMatrix();
 
-    glRotatef(-45.0f, 0.0f, 0.0f, 1.0f);
+    glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
+    glTranslatef(0, r, 0);
+
+    DrawCylinder(cyl_h, r, r, 8);
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    dark_green.apply();
+
+    DrawSphere(r, 30, sph_seg);
+
+    glTranslatef(0, r, 0);
+
+    light_green.apply();
+
+    DrawCone(cyl_h, r, 6);
+
+    dark_green.apply();
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    DrawSphere(r, 30, sph_seg);
+
+    glTranslatef(0, r, 0);
+
+    light_green.apply();
+
+    DrawCone(cyl_h, r, 6);
+        
+    glTranslatef(0, cyl_h + r, 0);
+
+    dark_green.apply();
+    
+    DrawSphere(r, 30, sph_seg);
+
+    light_green.apply();
+
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0, r, 0);
+
+    DrawCylinder(cyl_h, r, r, 8);
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    dark_green.apply();
+
+    DrawSphere(r, 30, sph_seg);
+
+    light_green.apply();
+
+    glPushMatrix();
+
+    glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
+
     glTranslatef(0, r, 0);
 
     DrawCylinder(cyl_h, r, r, 8);
@@ -383,12 +440,39 @@ void CGLRenderer::DrawFigure(double angle) {
 
     light_green.apply();
 
-
     glPopMatrix();
+
     glPushMatrix();
+
+    yellow.apply();
+
+    glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
+
     glTranslatef(0, r, 0);
 
     DrawCylinder(cyl_h, r, r, 8);
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    dark_green.apply();
+
+    DrawSphere(r, 30, sph_seg);
+
+    glTranslatef(0, r, 0);
+
+    light_green.apply();
+
+    DrawCone(cyl_h, r, 6);
+
+    dark_green.apply();
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    DrawSphere(r, 30, sph_seg);
+
+    light_green.apply();
+
+    glPopMatrix();
 
     glPopMatrix();
 
