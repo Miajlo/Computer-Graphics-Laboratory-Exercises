@@ -300,8 +300,96 @@ void CGLRenderer::DrawGrid(double width, double height, int nSegW, int nSegH) {
 
 void CGLRenderer::DrawFigure(double angle) {
 
-    glColor3f(0.8667f, 0.4941f, 0.1176f);
+    Color pot_clr(0.8667f, 0.4941f, 0.1176f), dark_green(0.0, 0.67f, 0.0f), light_green(0,1,0);
+    float r = 0.5, cyl_h = 2.2, bcyl_h;
+    int sph_seg = 30;
 
-    DrawCylinder(1.5, 1, 1.5, 6);
+
+    pot_clr.apply();
+
+    DrawCylinder(1.9, 1.2, 1.6, 6);
+
+    glTranslatef(0, 1.9f, 0);
+
+    DrawCylinder(1.0, 2, 2, 6);
+
+    glTranslatef(0, 1.0f, 0);
+
+    light_green.apply();
+
+    DrawCylinder(2, 0.65, 0.65, 8);
+
+    glTranslatef(0, 2 + r, 0);
+
+    dark_green.apply();
+
+    DrawSphere(r, 30, sph_seg);
+
+    glPushMatrix();
+    glRotatef(45.0f, 0.0f, 0.0f, 1.0f);
+
+    glTranslatef(0, r, 0);
+
+
+    light_green.apply();
+    
+    // Draw the rotated cylinder
+    DrawCylinder(cyl_h, r, r, 8);
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    dark_green.apply();
+
+    DrawSphere(r, 30, sph_seg);
+
+    glTranslatef(0, r, 0);
+
+    light_green.apply();
+
+    DrawCone(cyl_h, r, 6);
+
+    dark_green.apply();
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    DrawSphere(r, 30, sph_seg);
+
+    light_green.apply();
+    glPopMatrix();
+    glPushMatrix();
+
+    glRotatef(-45.0f, 0.0f, 0.0f, 1.0f);
+    glTranslatef(0, r, 0);
+
+    DrawCylinder(cyl_h, r, r, 8);
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    dark_green.apply();
+
+    DrawSphere(r, 30, sph_seg);
+
+    glTranslatef(0, r, 0);
+
+    light_green.apply();
+
+    DrawCone(cyl_h, r, 6);
+
+    dark_green.apply();
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    DrawSphere(r, 30, sph_seg);
+
+    light_green.apply();
+
+
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0, r, 0);
+
+    DrawCylinder(cyl_h, r, r, 8);
+
+    glPopMatrix();
 
 }

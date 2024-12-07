@@ -180,7 +180,7 @@ void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_SPACE: // Look up
 		GL_Renderer._Camera.Y += 0.5f;
 		break;
-	case VK_SHIFT: // Look down
+	case VK_CONTROL: // Look down
 		GL_Renderer._Camera.Y -= 0.5f;
 		break;
 	case VK_LEFT:
