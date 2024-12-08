@@ -24,7 +24,7 @@ public:
 
 	void DrawFigure(double angle);
 
-	Camera _Camera;
+
 protected:
 	HGLRC	 m_hrc; //OpenGL Rendering Context 
 

@@ -68,17 +68,21 @@ void CGLRenderer::DrawScene(CDC *pDC)
     // Reset the model-view matrix
     glLoadIdentity();
 
-    float lookX = sin(_Camera.pitch * M_PI / 180.0f);
-    float lookZ = -cos(_Camera.yawn * M_PI / 180.0f);
-    float lookY = sin(_Camera.yawn * M_PI / 180.0f);
+    Cam* camera = Cam::getInstance();
 
+    // Calculate the look-at direction based on spherical coordinates
+    float lookX = camera->getPosition().x + sin(camera->getTheta()) * cos(camera->getPhi());
+    float lookY = camera->getPosition().y + cos(camera->getPhi());
+    float lookZ = camera->getPosition().z + cos(camera->getTheta()) * sin(camera->getPhi());
 
+    // Up vector remains constant in this case (Y-axis)
+    float upX = 0.0f, upY = 1.0f, upZ = 0.0f;
 
-
+    // Apply gluLookAt using camera's position and calculated direction
     gluLookAt(
-        20.0f, _Camera.Y, _Camera.Z,      // Camera position at (5.0, Y, Z)
-        4.0f, _Camera.Y, _Camera.Z,      // Look-at point along negative X-axis
-        0.0f, 1.0f, 0.0f                 // Up vector remains along Y-axis
+        camera->getPosition().x, camera->getPosition().y, camera->getPosition().z, // camera->position
+        lookX, lookY, lookZ,                                                   // Look-at point
+        upX, upY, upZ                                                          // Up vector
     );
 
     // Translate the scene to move the triangle into view

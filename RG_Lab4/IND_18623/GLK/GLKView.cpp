@@ -38,11 +38,11 @@ END_MESSAGE_MAP()
 CGLKView::CGLKView()
 {
 	// TODO: add construction code here
-
+	
 }
 
-CGLKView::~CGLKView()
-{
+CGLKView::~CGLKView() {
+	Cam::deleteInstance();
 }
 
 BOOL CGLKView::PreCreateWindow(CREATESTRUCT& cs)
@@ -161,41 +161,32 @@ void CGLKView::OnInitialUpdate()
 
 void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	float cameraSpeed = 0.1f; // Adjust speed as needed
+	Cam* camera = Cam::getInstance();
+	float angleDelta = 0.1f;  // Angle increment for theta and phi
+	float radiusDelta = 0.5f; // Radius increment for zoom in/out
 
-	switch (nChar)
-	{
-	case 'W': // Move forward
-		GL_Renderer._Camera.Z -= cameraSpeed;
+	switch (nChar) {
+	case VK_LEFT: // Rotate left (decrease theta)
+		camera->rotate(-angleDelta, 0.0f);
 		break;
-	case 'S': // Move backward
-		GL_Renderer._Camera.Z += cameraSpeed;
+
+	case VK_RIGHT: // Rotate right (increase theta)
+		camera->rotate(angleDelta, 0.0f);
 		break;
-	case 'A': // Move left
-		GL_Renderer._Camera.X -= cameraSpeed;
+
+	case VK_UP: // Rotate up (increase phi)
+		camera->rotate(0.0f, -angleDelta);
 		break;
-	case 'D': // Move right
-		GL_Renderer._Camera.X += cameraSpeed;
+
+	case VK_DOWN: // Rotate down (decrease phi)
+		camera->rotate(0.0f, angleDelta);
 		break;
-		case VK_SPACE: // Look up
-		GL_Renderer._Camera.Y += 0.5f;
-		break;
-	case VK_CONTROL: // Look down
-		GL_Renderer._Camera.Y -= 0.5f;
-		break;
-	case VK_LEFT:
-		GL_Renderer._Camera.pitch -= 0.5f;
-		break;
-	case VK_RIGHT:
-		GL_Renderer._Camera.pitch += 0.5f;
-		break;
-	case VK_UP:
-		GL_Renderer._Camera.yawn += 0.5f;
-		break;
-	case VK_DOWN:
-		GL_Renderer._Camera.yawn -= 0.5f;
-		break;
+
+	default:
+		CView::OnKeyDown(nChar, nRepCnt, nFlags);
+		return; // Let the base class handle other keys
 	}
-	Invalidate();
+
+	Invalidate(); // Redraw the view
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }

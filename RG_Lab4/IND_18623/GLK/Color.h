@@ -7,7 +7,7 @@ struct Color {
 	float r, g, b; // RGB components
 
 	// Constructor to initialize the color
-	Color(float red, float green, float blue) : r(red), g(green), b(blue) {}
+	Color(float red=0, float green=0, float blue=0) : r(red), g(green), b(blue) {}
 
 	// Optional: a method to apply the color using OpenGL's glColor3f
 	void apply() const {
