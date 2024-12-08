@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Vector3.h"
 #include <cmath>
 #include<corecrt_math_defines.h>
@@ -48,7 +47,7 @@ public:
     }
 
 private:
-    Camera(float yaww=90.0f, float pitchh=0.0f, float rad = 15.0f)  {
+    Camera(float yaww=90.0f, float pitchh=0.0f, float rad = 17.0f)  {
         yaw = yaww;
         pitch = pitchh;
         r = rad;

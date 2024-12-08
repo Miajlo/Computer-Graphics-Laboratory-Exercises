@@ -48,7 +48,7 @@ void CGLRenderer::PrepareScene(CDC *pDC)
 	wglMakeCurrent(pDC->m_hDC, m_hrc);
 	//---------------------------------
 
-    glClearColor(0.502, 0.753, 1.0f, 1.0f); // Black background
+    glClearColor(0.502, 0.753, 1.0f, 1.0f); // Blue background
     glEnable(GL_DEPTH_TEST); // Enable depth testing
     glDepthFunc(GL_LEQUAL);  // Set depth function
     glShadeModel(GL_SMOOTH); // Enable smooth shading
@@ -293,26 +293,16 @@ void CGLRenderer::DrawGrid(double width, double height, int nSegW, int nSegH) {
 }
 
 void CGLRenderer::DrawFigure(double angle) {
-
-    Color pot_clr(0.8667f, 0.4941f, 0.1176f), dark_green(0.0, 0.67f, 0.0f), light_green(0,1,0);
-    Color yellow(1.0f, 1.0f, 0.0f);
-    float r = 0.5, cyl_h = 2.2, bcyl_h, pot_bot_h = 1.9f, pot_top_h=1.0f;
-    int sph_seg = 30;
+    float r = 0.5, cyl_h = 2.2;
+    //segmet count
+    int sph_seg = 30, cyl_seg = 8, cone_seg = 6;
 
 
-    pot_clr.apply();
-
-    DrawCylinder(pot_bot_h, 1.2, 1.6, 6);
-
-    glTranslatef(0, pot_bot_h, 0);
-
-    DrawCylinder(pot_top_h, 2, 2, 6);
-
-    glTranslatef(0, pot_top_h, 0);
+    DrawPot();
 
     light_green.apply();
 
-    DrawCylinder(2, 0.65, 0.65, 8);
+    DrawCylinder(2, 0.65, 0.65, cyl_seg);
 
     glTranslatef(0, 2 + r, 0);
 
@@ -320,89 +310,21 @@ void CGLRenderer::DrawFigure(double angle) {
 
     DrawSphere(r, 30, sph_seg);
 
-    glPushMatrix();
-
-    // FIRST LEFT BRANCH
-
-    glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
-
-    glTranslatef(0, r, 0);
-
-
-    light_green.apply();
-    
-    // Draw the rotated cylinder
-    DrawCylinder(cyl_h, r, r, 8);
-
-    glTranslatef(0, cyl_h + r, 0);
-
-    dark_green.apply();
-
-    DrawSphere(r, 30, sph_seg);
-
-    glTranslatef(0, r, 0);
-
-    light_green.apply();
-
-    DrawCone(cyl_h, r, 6);
-
-    dark_green.apply();
-
-    glTranslatef(0, cyl_h + r, 0);
-
-    DrawSphere(r, 30, sph_seg);
-
-    light_green.apply();
+    DrawCactusArm(45.0f, light_green);
     
     glPopMatrix();
-    glPushMatrix();
 
-    // FIRST RIGHT BRANCH
-    glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
-    glTranslatef(0, r, 0);
-
-    DrawCylinder(cyl_h, r, r, 8);
-
-    glTranslatef(0, cyl_h + r, 0);
-
-    dark_green.apply();
-
-    DrawSphere(r, 30, sph_seg);
-
-    glTranslatef(0, r, 0);
-
-    light_green.apply();
-
-    DrawCone(cyl_h, r, 6);
-
-    dark_green.apply();
-
-    glTranslatef(0, cyl_h + r, 0);
-
-    DrawSphere(r, 30, sph_seg);
-
-    glTranslatef(0, r, 0);
-
-    light_green.apply();
-
-    DrawCone(cyl_h, r, 6);
-        
-    glTranslatef(0, cyl_h + r, 0);
-
-    dark_green.apply();
-    
-    DrawSphere(r, 30, sph_seg);
-
-    light_green.apply();
+    DrawExtCactusArm(-45.0f, light_green);
 
     glPopMatrix();
+
     glPushMatrix();
 
     // FIRST UP BRANCH
 
     glTranslatef(0, r, 0);
 
-    DrawCylinder(cyl_h, r, r, 8);
+    DrawCylinder(cyl_h, r, r, cyl_seg);
 
     glTranslatef(0, cyl_h + r, 0);
 
@@ -412,49 +334,38 @@ void CGLRenderer::DrawFigure(double angle) {
 
     light_green.apply();
 
-    glPushMatrix();
-
-    // SECOND RIGHT BRANCH
-
-    glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
-
-    glTranslatef(0, r, 0);
-
-    DrawCylinder(cyl_h, r, r, 8);
-
-    glTranslatef(0, cyl_h + r, 0);
-
-    dark_green.apply();
-
-    DrawSphere(r, 30, sph_seg);
-
-    glTranslatef(0, r, 0);
-
-    light_green.apply();
-
-    DrawCone(cyl_h, r, 6);
-
-    dark_green.apply();
-
-    glTranslatef(0, cyl_h + r, 0);
-
-    DrawSphere(r, 30, sph_seg);
-
-    light_green.apply();
+    DrawCactusArm(-45.0f, light_green);
 
     glPopMatrix();
-
-    glPushMatrix();
-
-    yellow.apply();
-
     // YELLOW BRANCH
 
-    glRotatef(45.0f + angle, 1.0f, 0.0f, 0.0f);
+    DrawCactusArm(45.0f + angle, yellow);
+
+    glPopMatrix();
+
+    glPopMatrix();
+
+}
+
+void CGLRenderer::DrawCactusArm(double angle, Color first_clr) {
+    float r = 0.5, cyl_h = 2.2;
+    //segmet count
+    int sph_seg = 30, pot_seg = 6, cyl_seg = 8, cone_seg = 6;
+
+
+    glPushMatrix();
+
+    // FIRST LEFT BRANCH
+
+    glRotatef(angle, 1.0f, 0.0f, 0.0f);
 
     glTranslatef(0, r, 0);
 
-    DrawCylinder(cyl_h, r, r, 8);
+
+    first_clr.apply();
+
+    // Draw the rotated cylinder
+    DrawCylinder(cyl_h, r, r, cyl_seg);
 
     glTranslatef(0, cyl_h + r, 0);
 
@@ -466,7 +377,7 @@ void CGLRenderer::DrawFigure(double angle) {
 
     light_green.apply();
 
-    DrawCone(cyl_h, r, 6);
+    DrawCone(cyl_h, r, cone_seg);
 
     dark_green.apply();
 
@@ -476,8 +387,46 @@ void CGLRenderer::DrawFigure(double angle) {
 
     light_green.apply();
 
-    glPopMatrix();
+    
+}
 
-    glPopMatrix();
+void CGLRenderer::DrawExtCactusArm(double angle, Color first_clr) {
+    float r = 0.5, cyl_h = 2.2;
+    //segmet count
+    int sph_seg = 30, pot_seg = 6, cyl_seg = 8, cone_seg = 6;
 
+    DrawCactusArm(angle, first_clr);
+
+    glTranslatef(0, r, 0);
+
+    light_green.apply();
+
+    DrawCone(cyl_h, r, cone_seg);
+
+    glTranslatef(0, cyl_h + r, 0);
+
+    dark_green.apply();
+
+    DrawSphere(r, 30, sph_seg);
+
+    light_green.apply();
+
+}
+
+void CGLRenderer::DrawPot(){
+    float pot_bb_r = 1.2f, pot_bot_h = 1.9f, pot_top_h = 1.0f;
+    float pot_bt_r = 1.6f, pot_top_r = 2.0f;
+    //segmet count
+    int pot_seg = 6;
+
+
+    pot_clr.apply();
+
+    DrawCylinder(pot_bot_h, pot_bb_r, pot_bt_r, pot_seg);
+
+    glTranslatef(0, pot_bot_h, 0);
+
+    DrawCylinder(pot_top_h, pot_top_r, pot_top_r, pot_seg);
+
+    glTranslatef(0, pot_top_h, 0);
 }
