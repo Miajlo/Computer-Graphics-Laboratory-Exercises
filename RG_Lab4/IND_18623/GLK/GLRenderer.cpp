@@ -8,8 +8,8 @@
 #include<corecrt_math_defines.h>
 //#pragma comment(lib, "GL\\glut32.lib")
 
-CGLRenderer::CGLRenderer(void)
-{
+CGLRenderer::CGLRenderer(void) {
+    yellow_rot_angle = 0;
 }
 
 CGLRenderer::~CGLRenderer(void)
@@ -64,46 +64,34 @@ void CGLRenderer::DrawScene(CDC *pDC)
     // Clear the color and depth buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-    // Reset the model-view matrix
     glLoadIdentity();
 
-    Cam* camera = Cam::getInstance();
+    Camera& camera = Camera::getInstance();
 
-    // Calculate the look-at direction based on spherical coordinates
-    float lookX = camera->getPosition().x + sin(camera->getTheta()) * cos(camera->getPhi());
-    float lookY = camera->getPosition().y + cos(camera->getPhi());
-    float lookZ = camera->getPosition().z + cos(camera->getTheta()) * sin(camera->getPhi());
+
+    float lookX = 0.0f, lookY = 7.0f, lookZ = 0.0f;
 
     // Up vector remains constant in this case (Y-axis)
     float upX = 0.0f, upY = 1.0f, upZ = 0.0f;
 
-    // Apply gluLookAt using camera's position and calculated direction
+    // Apply gluLookAt using the camera's position and the fixed point (origin)
     gluLookAt(
-        camera->getPosition().x, camera->getPosition().y, camera->getPosition().z, // camera->position
-        lookX, lookY, lookZ,                                                   // Look-at point
+        camera.getPosition().x, camera.getPosition().y, camera.getPosition().z, // Camera position
+        lookX, lookY, lookZ,                                                   // Look-at point (the origin or fixed point)
         upX, upY, upZ                                                          // Up vector
     );
 
-    // Translate the scene to move the triangle into view
-    // Move 5 units into the screen (negative Z direction)
-    //glTranslatef(0.0f, 0.0f, -5.0f);
-    
+    double axis_length = 20, grid_width = 10.0f, grid_height = 10.0f;
+    int grid_nSegW = 10, grid_nSegH = 10;
+    Color grid_clr(1.0f, 1.0f, 1.0f);
 
-    DrawAxis(20);
+    DrawAxis(axis_length);
 
-    glColor3f(1.0, 1.0, 1.0);
+    grid_clr.apply();
 
-    DrawGrid(10.0, 10.0, 10, 10);
+    DrawGrid(grid_width, grid_height, grid_nSegW, grid_nSegH);
 
-
-
-
-    DrawFigure(0);
-
-
-
-
+    DrawFigure(yellow_rot_angle);
 
     // Swap the front and back buffers to display the rendered image
     SwapBuffers(pDC->m_hDC);
@@ -308,19 +296,19 @@ void CGLRenderer::DrawFigure(double angle) {
 
     Color pot_clr(0.8667f, 0.4941f, 0.1176f), dark_green(0.0, 0.67f, 0.0f), light_green(0,1,0);
     Color yellow(1.0f, 1.0f, 0.0f);
-    float r = 0.5, cyl_h = 2.2, bcyl_h;
+    float r = 0.5, cyl_h = 2.2, bcyl_h, pot_bot_h = 1.9f, pot_top_h=1.0f;
     int sph_seg = 30;
 
 
     pot_clr.apply();
 
-    DrawCylinder(1.9, 1.2, 1.6, 6);
+    DrawCylinder(pot_bot_h, 1.2, 1.6, 6);
 
-    glTranslatef(0, 1.9f, 0);
+    glTranslatef(0, pot_bot_h, 0);
 
-    DrawCylinder(1.0, 2, 2, 6);
+    DrawCylinder(pot_top_h, 2, 2, 6);
 
-    glTranslatef(0, 1.0f, 0);
+    glTranslatef(0, pot_top_h, 0);
 
     light_green.apply();
 
@@ -333,6 +321,9 @@ void CGLRenderer::DrawFigure(double angle) {
     DrawSphere(r, 30, sph_seg);
 
     glPushMatrix();
+
+    // FIRST LEFT BRANCH
+
     glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
 
     glTranslatef(0, r, 0);
@@ -362,9 +353,11 @@ void CGLRenderer::DrawFigure(double angle) {
     DrawSphere(r, 30, sph_seg);
 
     light_green.apply();
+    
     glPopMatrix();
     glPushMatrix();
 
+    // FIRST RIGHT BRANCH
     glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
     glTranslatef(0, r, 0);
 
@@ -404,6 +397,9 @@ void CGLRenderer::DrawFigure(double angle) {
 
     glPopMatrix();
     glPushMatrix();
+
+    // FIRST UP BRANCH
+
     glTranslatef(0, r, 0);
 
     DrawCylinder(cyl_h, r, r, 8);
@@ -417,6 +413,8 @@ void CGLRenderer::DrawFigure(double angle) {
     light_green.apply();
 
     glPushMatrix();
+
+    // SECOND RIGHT BRANCH
 
     glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
 
@@ -450,7 +448,9 @@ void CGLRenderer::DrawFigure(double angle) {
 
     yellow.apply();
 
-    glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
+    // YELLOW BRANCH
+
+    glRotatef(45.0f + angle, 1.0f, 0.0f, 0.0f);
 
     glTranslatef(0, r, 0);
 

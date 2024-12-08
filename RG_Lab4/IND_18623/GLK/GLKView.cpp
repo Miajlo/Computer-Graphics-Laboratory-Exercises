@@ -42,7 +42,7 @@ CGLKView::CGLKView()
 }
 
 CGLKView::~CGLKView() {
-	Cam::deleteInstance();
+	
 }
 
 BOOL CGLKView::PreCreateWindow(CREATESTRUCT& cs)
@@ -161,30 +161,32 @@ void CGLKView::OnInitialUpdate()
 
 void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	Cam* camera = Cam::getInstance();
-	float angleDelta = 0.1f;  // Angle increment for theta and phi
-	float radiusDelta = 0.5f; // Radius increment for zoom in/out
+	Camera& camera = Camera::getInstance();
+	float angleDelta = 2.0f;  // Angle increment for theta and phi
+	float radiusDelta = 2.0f; // Radius increment for zoom in/out
 
 	switch (nChar) {
-	case VK_LEFT: // Rotate left (decrease theta)
-		camera->rotate(-angleDelta, 0.0f);
+	case VK_UP:    // Rotate up (increase pitch)
+		camera.rotate(0.0f, angleDelta);
 		break;
 
-	case VK_RIGHT: // Rotate right (increase theta)
-		camera->rotate(angleDelta, 0.0f);
+	case VK_DOWN:  // Rotate down (decrease pitch)
+		camera.rotate(0.0f, -angleDelta);
 		break;
 
-	case VK_UP: // Rotate up (increase phi)
-		camera->rotate(0.0f, -angleDelta);
+	case VK_LEFT:  // Rotate left (decrease yaw)
+		camera.rotate(-angleDelta, 0.0f);
 		break;
 
-	case VK_DOWN: // Rotate down (decrease phi)
-		camera->rotate(0.0f, angleDelta);
+	case VK_RIGHT: // Rotate right (increase yaw)
+		camera.rotate(angleDelta, 0.0f);
 		break;
-
-	default:
-		CView::OnKeyDown(nChar, nRepCnt, nFlags);
-		return; // Let the base class handle other keys
+	case 'A': // Rotate right (increase yaw)
+		GL_Renderer.yellow_rot_angle += ROT_STEP;
+		break;
+	case 'D': // Rotate right (increase yaw)
+		GL_Renderer.yellow_rot_angle -= ROT_STEP;
+		break;
 	}
 
 	Invalidate(); // Redraw the view

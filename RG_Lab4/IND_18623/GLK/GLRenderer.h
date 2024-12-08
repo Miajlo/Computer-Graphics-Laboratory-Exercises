@@ -24,7 +24,7 @@ public:
 
 	void DrawFigure(double angle);
 
-
+	float yellow_rot_angle;
 protected:
 	HGLRC	 m_hrc; //OpenGL Rendering Context 
 

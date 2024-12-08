@@ -1,62 +1,64 @@
 #pragma once
 
 #include "Vector3.h"
-#include <corecrt_math_defines.h>
+#include <cmath>
+#include<corecrt_math_defines.h>
 
-class Cam {
+class Camera {
 public:
-    static Cam* _instance;
-    // Singleton instance
-    static Cam* getInstance() {
-        if (!_instance)
-            _instance->initialize();
-        return _instance;
-    }
-    Vector3 getPosition() const { return position; }
-    float getTheta() const { return theta; }
-    float getPhi() const { return phi; }
-    // Prevent copying or assignment
-    Cam(const Cam&) = delete;
-    Cam& operator=(const Cam&) = delete;
-    static void deleteInstance() {
-        delete _instance;  // Safely delete the allocated memory
-        _instance = nullptr; // Set pointer to null to avoid dangling pointer
-    }
-    // Initialize the camera position
-    void initialize(float radius = 10.0f, float initTheta = 0.0f, float initPhi = M_PI / 2.0f) {
-        this->radius = radius;
-        this->theta = initTheta;
-        this->phi = initPhi;
-        updateCameraPosition();
+    static Camera& getInstance() {
+        static Camera instance;
+        return instance;
     }
 
-    // Rotate the camera
-    void rotate(float deltaTheta, float deltaPhi) {
-        theta += deltaTheta;
-        phi += deltaPhi;
+    void initialize(const Vector3& initPosition, float initYaw = 0.0f, float initPitch = 0.0f) {
+        position = initPosition;
+        yaw = initYaw;
+        pitch = initPitch;
+    }
 
-        // Clamp phi to avoid flipping at poles
-        const float epsilon = 0.01f;
-        phi = fmax(epsilon, fmin(M_PI - epsilon, phi));
+    void rotate(float deltaYaw, float deltaPitch) {
+        yaw += deltaYaw;
+        pitch += deltaPitch;
+        if (pitch > 89.0f) pitch = 89.0f;
+        if (pitch < -89.0f) pitch = -89.0f;
 
-        updateCameraPosition();
+        updatePosition();
+    }
+
+    void updatePosition() {
+        float yawRadians = yaw * M_PI / 180.0f;
+        float pitchRadians = pitch * M_PI / 180.0f;
+
+        position.x = r * cos(pitchRadians) * sin(yawRadians);
+        position.y = r * sin(pitchRadians) + 7.0f;
+        position.z = r * cos(pitchRadians) * cos(yawRadians);
+    }
+
+    Vector3 getPosition() const {
+        return position;
+    }
+
+    float getYaw() const {
+        return yaw;
+    }
+
+    float getPitch() const {
+        return pitch;
     }
 
 private:
-    Cam() : radius(10.0f), theta(0.0f), phi(M_PI / 2.0f), position(10.0f, 0.0f, 0.0f) {}
-
-    // Update the camera position based on spherical coordinates
-    void updateCameraPosition() {
-        position.x = radius * sin(phi) * cos(theta);
-        position.y = radius * cos(phi);
-        position.z = radius * sin(phi) * sin(theta);
+    Camera(float yaww=90.0f, float pitchh=0.0f, float rad = 15.0f)  {
+        yaw = yaww;
+        pitch = pitchh;
+        r = rad;
+        position = { r, 7.0f, 0.0f };
     }
+    Camera(Camera const&) = delete;
+    void operator=(Camera const&) = delete;
 
-    // Member variables
-    float radius;      // Distance from the origin
-    float theta;       // Horizontal angle (rotation around Y-axis)
-    float phi;         // Vertical angle (rotation around X-axis)
-    Vector3 position;  // Camera position in Cartesian coordinates
+    Vector3 position;
+    float yaw;
+    float pitch;
+    float r;
 };
-
-Cam* Cam::_instance = nullptr;
