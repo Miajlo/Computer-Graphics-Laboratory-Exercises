@@ -162,8 +162,8 @@ void CGLKView::OnInitialUpdate()
 void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	Camera& camera = Camera::getInstance();
-	float angleDelta = 2.0f;  // Angle increment for theta and phi
-	float radiusDelta = 2.0f; // Radius increment for zoom in/out
+	float angleDelta = 5.0f;  // Angle increment for theta and phi
+	float radiusDelta = 5.0f; // Radius increment for zoom in/out
 
 	switch (nChar) {
 	case VK_UP:    // Rotate up (increase pitch)
