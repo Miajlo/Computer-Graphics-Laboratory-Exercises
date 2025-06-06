@@ -69,6 +69,7 @@ void CGLRenderer::DrawScene(CDC *pDC)
     // Clear the color and depth buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     Camera& camera = Camera::getInstance();
@@ -456,57 +457,50 @@ void CGLRenderer::DrawFigure()
 
     gray.apply();
 
+    glPushMatrix();  // Begin overall figure transformation
+
     DrawHalfSphere(r, segAlpha, segBeta);
 
-    glPushMatrix();
+    glPushMatrix();  // For the cylinders above the half-sphere
 
-    glTranslatef(0, 0.8 * r, 0);
+    glTranslatef(0, 0.8f * r, 0);
 
     DrawCylinder(h, cR, cR, 8);
 
     glTranslatef(0, h, 0);
 
-    glPushMatrix();
+    glPushMatrix();  // For the rotated cylinder
 
     glRotatef(45, 0, 1.0, 0);
 
     DrawCylinder(h / 2, sR, sR, 4);
 
-    glPopMatrix();
+    glPopMatrix();  // End rotated cylinder
 
     glTranslatef(0, h / 2, 0);
 
     teal.apply();
 
-    DrawCylinder(cylH, cylR, 3*cylR/4, segAlpha);
+    // Multiple vase cylinders with alternating colors
+    DrawCylinder(cylH, cylR, 3 * cylR / 4, segAlpha);
 
     DrawVaseCylinder(cylH, cylR34, cylR2, purple);
-
     DrawVaseCylinder(cylH, cylR2, cylR2, teal);
-
     DrawVaseCylinder(cylH, cylR2, cylR2, purple);
-
     DrawVaseCylinder(cylH, cylR2, cylR34, teal);
-
     DrawVaseCylinder(cylH, cylR34, cylR2, purple);
-
     DrawVaseCylinder(cylH, cylR2, cylR34, teal);
-
     DrawVaseCylinder(cylH, cylR34, cylR, purple);
-
     DrawVaseCylinder(cylH, cylR, cylR34, teal);
-
     DrawVaseCylinder(cylH, cylR34, cylR2, purple);
-
     DrawVaseCylinder(cylH, cylR2, cylR34, teal);
-
     DrawVaseCylinder(cylH, cylR34, cylR2, purple);
-
     DrawVaseCylinder(cylH, cylR2, cylR34, teal);
-
     DrawVaseCylinder(cylH, cylR34, cylR, purple);
-    
-    glPopMatrix();
+
+    glPopMatrix();  // End cylinders above half-sphere
+
+    glPopMatrix();  // End overall figure transformation
 }
 
 
@@ -564,15 +558,28 @@ void CGLRenderer::SetupLigting()
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
 
-    GLfloat diffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-    GLfloat ambient[] = { 0.2f, 0.0f, 0.0f, 1.0f };
-    GLfloat specular[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 0.2f };
+    GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
 
-
-    GLfloat position[] = { 10.0f, 10.0f, 10.0f, 1.0f };  // positional light
+    GLfloat position[] = { 0.0f, 20.0f, 20.0f, 1.0f };  // positional light
     glLightfv(GL_LIGHT0, GL_POSITION, position);
+}
+
+void CGLRenderer::SetupMaterials()
+{
+    GLfloat mat_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };  // white diffuse, reflects light color as is
+    GLfloat mat_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };  // subtle ambient reflection
+    GLfloat mat_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // white specular for shiny highlights
+    GLfloat mat_shininess[] = { 30.0f };
+
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
+
 }
