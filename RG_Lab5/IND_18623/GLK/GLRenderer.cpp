@@ -53,26 +53,9 @@ void CGLRenderer::PrepareScene(CDC *pDC)
     glDepthFunc(GL_LEQUAL);  // Set depth function
     glShadeModel(GL_SMOOTH); // Enable smooth shading
 
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
-    
-    GLfloat globalAmbient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
-    // Set LIGHT0 properties
-    GLfloat lightDiffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-    GLfloat lightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat lightAmbient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-    // Directional light from +Z axis (towards negative Z)
-    GLfloat lightPosition[] = { 0.0f, 0.0f, 1.0f, 0.0f }; // w=0 means directional light
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-
+    SetupLigting();
 
 	//---------------------------------
 	wglMakeCurrent(NULL, NULL);
@@ -104,6 +87,8 @@ void CGLRenderer::DrawScene(CDC *pDC)
         camPos.x + forward.x, camPos.y + forward.y, camPos.z + forward.z,  // Target (eye + forward)
         up.x, up.y, up.z                                  // Up vector
     );
+
+    SetupLigting();
 
     double axis_length = 20, grid_width = 10.0f, grid_height = 10.0f;
     int grid_nSegW = 10, grid_nSegH = 10;
@@ -186,56 +171,6 @@ void CGLRenderer::DrawHalfSphere(double r, int nSegAlpha, int nSegBeta) {
         glEnd();
     }
 }
-
-//void CGLRenderer::DrawCylinder(double h, double r1, double r2, int nSeg) {
-//    double angleStep = 2.0 * M_PI / nSeg;
-//
-//    // Draw the sides of the cylinder
-//    glBegin(GL_QUAD_STRIP);
-//    for (int i = 0; i <= nSeg; i++)
-//    {
-//        double angle = i * angleStep;
-//        double x = cos(angle);
-//        double z = sin(angle);
-//
-//        // Bottom circle vertex
-//        glVertex3d(r1 * x, 0.0, r1 * z);
-//
-//        // Top circle vertex
-//        glVertex3d(r2 * x, h, r2 * z);
-//    }
-//    glEnd();
-//
-//    // Draw the bottom base
-//    if (r1 > 0)
-//    {
-//        glBegin(GL_TRIANGLE_FAN);
-//        glVertex3d(0.0, 0.0, 0.0); // Center of the bottom base
-//        for (int i = 0; i <= nSeg; i++)
-//        {
-//            double angle = i * angleStep;
-//            double x = cos(angle);
-//            double z = sin(angle);
-//            glVertex3d(r1 * x, 0.0, r1 * z);
-//        }
-//        glEnd();
-//    }
-//
-//    // Draw the top base
-//    if (r2 > 0)
-//    {
-//        glBegin(GL_TRIANGLE_FAN);
-//        glVertex3d(0.0, h, 0.0); // Center of the top base
-//        for (int i = 0; i <= nSeg; i++)
-//        {
-//            double angle = i * angleStep;
-//            double x = cos(angle);
-//            double z = sin(angle);
-//            glVertex3d(r2 * x, h, r2 * z);
-//        }
-//        glEnd();
-//    }
-//}
 
 void CGLRenderer::DrawCylinder(double h, double r1, double r2, int nSeg) {
     double angleStep = 2.0 * M_PI / nSeg;
@@ -622,4 +557,19 @@ void CGLRenderer::DrawVaseCylinder(float h, float r1, float r2, Color color)
 
     DrawCylinder(h, r1, r2, segAlpha);
 
+}
+
+void CGLRenderer::SetupLigting()
+{
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+
+    GLfloat lightDir[] = { 1.0f, 1.0f, 0.0f, 0.0f };  // directional light
+    glLightfv(GL_LIGHT0, GL_POSITION, lightDir);
+
+    GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+
+    GLfloat position[] = { 10.0f, 10.0f, 10.0f, 1.0f };  // positional light
+    glLightfv(GL_LIGHT0, GL_POSITION, position);
 }

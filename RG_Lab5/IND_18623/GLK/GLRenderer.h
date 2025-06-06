@@ -30,6 +30,7 @@ public:
 	void DrawFigure();
 	void DrawWalls();
 	void DrawVaseCylinder(float h, float r1, float r2, Color color);
+	void SetupLigting();
 	float yellow_rot_angle;
 protected:
 	HGLRC	 m_hrc; //OpenGL Rendering Context 
