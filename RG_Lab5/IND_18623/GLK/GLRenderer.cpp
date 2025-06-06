@@ -52,6 +52,28 @@ void CGLRenderer::PrepareScene(CDC *pDC)
     glEnable(GL_DEPTH_TEST); // Enable depth testing
     glDepthFunc(GL_LEQUAL);  // Set depth function
     glShadeModel(GL_SMOOTH); // Enable smooth shading
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+    
+    GLfloat globalAmbient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
+
+    // Set LIGHT0 properties
+    GLfloat lightDiffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+    GLfloat lightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat lightAmbient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+    // Directional light from +Z axis (towards negative Z)
+    GLfloat lightPosition[] = { 0.0f, 0.0f, 1.0f, 0.0f }; // w=0 means directional light
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+
 	//---------------------------------
 	wglMakeCurrent(NULL, NULL);
 }
@@ -165,10 +187,59 @@ void CGLRenderer::DrawHalfSphere(double r, int nSegAlpha, int nSegBeta) {
     }
 }
 
+//void CGLRenderer::DrawCylinder(double h, double r1, double r2, int nSeg) {
+//    double angleStep = 2.0 * M_PI / nSeg;
+//
+//    // Draw the sides of the cylinder
+//    glBegin(GL_QUAD_STRIP);
+//    for (int i = 0; i <= nSeg; i++)
+//    {
+//        double angle = i * angleStep;
+//        double x = cos(angle);
+//        double z = sin(angle);
+//
+//        // Bottom circle vertex
+//        glVertex3d(r1 * x, 0.0, r1 * z);
+//
+//        // Top circle vertex
+//        glVertex3d(r2 * x, h, r2 * z);
+//    }
+//    glEnd();
+//
+//    // Draw the bottom base
+//    if (r1 > 0)
+//    {
+//        glBegin(GL_TRIANGLE_FAN);
+//        glVertex3d(0.0, 0.0, 0.0); // Center of the bottom base
+//        for (int i = 0; i <= nSeg; i++)
+//        {
+//            double angle = i * angleStep;
+//            double x = cos(angle);
+//            double z = sin(angle);
+//            glVertex3d(r1 * x, 0.0, r1 * z);
+//        }
+//        glEnd();
+//    }
+//
+//    // Draw the top base
+//    if (r2 > 0)
+//    {
+//        glBegin(GL_TRIANGLE_FAN);
+//        glVertex3d(0.0, h, 0.0); // Center of the top base
+//        for (int i = 0; i <= nSeg; i++)
+//        {
+//            double angle = i * angleStep;
+//            double x = cos(angle);
+//            double z = sin(angle);
+//            glVertex3d(r2 * x, h, r2 * z);
+//        }
+//        glEnd();
+//    }
+//}
+
 void CGLRenderer::DrawCylinder(double h, double r1, double r2, int nSeg) {
     double angleStep = 2.0 * M_PI / nSeg;
 
-    // Draw the sides of the cylinder
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= nSeg; i++)
     {
@@ -176,44 +247,57 @@ void CGLRenderer::DrawCylinder(double h, double r1, double r2, int nSeg) {
         double x = cos(angle);
         double z = sin(angle);
 
-        // Bottom circle vertex
+        // Compute normal for the side surface (approximate as vector pointing outwards)
+        GLfloat nx = (float)x;
+        GLfloat ny = 0.0f;
+        GLfloat nz = (float)z;
+
+        glNormal3f(nx, ny, nz);
         glVertex3d(r1 * x, 0.0, r1 * z);
 
-        // Top circle vertex
+        glNormal3f(nx, ny, nz);
         glVertex3d(r2 * x, h, r2 * z);
     }
     glEnd();
 
-    // Draw the bottom base
+    // Bottom base normals pointing downwards (0, -1, 0)
     if (r1 > 0)
     {
         glBegin(GL_TRIANGLE_FAN);
-        glVertex3d(0.0, 0.0, 0.0); // Center of the bottom base
+        glNormal3f(0.0f, -1.0f, 0.0f);
+        glVertex3d(0.0, 0.0, 0.0); // center
+
         for (int i = 0; i <= nSeg; i++)
         {
             double angle = i * angleStep;
             double x = cos(angle);
             double z = sin(angle);
+            glNormal3f(0.0f, -1.0f, 0.0f);
             glVertex3d(r1 * x, 0.0, r1 * z);
         }
         glEnd();
     }
 
-    // Draw the top base
+    // Top base normals pointing upwards (0, 1, 0)
     if (r2 > 0)
     {
         glBegin(GL_TRIANGLE_FAN);
-        glVertex3d(0.0, h, 0.0); // Center of the top base
+        glNormal3f(0.0f, 1.0f, 0.0f);
+        glVertex3d(0.0, h, 0.0); // center
+
         for (int i = 0; i <= nSeg; i++)
         {
             double angle = i * angleStep;
             double x = cos(angle);
             double z = sin(angle);
+            glNormal3f(0.0f, 1.0f, 0.0f);
             glVertex3d(r2 * x, h, r2 * z);
         }
         glEnd();
     }
 }
+
+
 
 void CGLRenderer::DrawCone(double h, double r, int nSeg) {
     double angleStep = 2.0 * M_PI / nSeg;
@@ -271,8 +355,6 @@ void CGLRenderer::DrawAxis(double width) {
 void CGLRenderer::DrawGrid(double width, double height, int nSegW, int nSegH) {
     double stepW = width / nSegW; // Step size for width
     double stepH = height / nSegH; // Step size for height
-
-    //glColor3f(0.7f, 0.7f, 0.7f); // Light gray color for the grid lines
 
     glBegin(GL_LINES);
     // Draw vertical lines (parallel to Z-axis)
@@ -489,39 +571,6 @@ void CGLRenderer::DrawFigure()
 
     DrawVaseCylinder(cylH, cylR34, cylR, purple);
     
-
-   /* glTranslatef(0, cylH, 0);
-
-    purple.apply();
-
-    DrawCylinder(cylH, 3 * cylR / 4, cylR / 2, segAlpha);
-
-    glTranslatef(0, cylH, 0);
-
-    teal.apply();
-
-    DrawCylinder(cylH, cylR / 2, cylR / 2, segAlpha);
-
-    glTranslatef(0, cylH, 0);
-
-    purple.apply();
-
-    DrawCylinder(cylH, cylR / 2, cylR / 2, segAlpha);
-
-    glTranslatef(0, cylH, 0);
-
-    teal.apply();
-
-    DrawCylinder(cylH, cylR / 2, 3 * cylR / 4, segAlpha);
-
-    glTranslatef(0, cylH, 0);
-
-    purple.apply();
-
-    DrawCylinder(cylH, 3 * cylR / 4, cylR / 2, segAlpha);*/
-
-
-
     glPopMatrix();
 }
 
