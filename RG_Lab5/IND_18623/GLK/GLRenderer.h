@@ -1,7 +1,6 @@
 #pragma once
-#include"Camera.h"
-#include"Color.h"
-
+#include "Camera.h"
+#include<corecrt_math_defines.h>
 
 class CGLRenderer
 {
@@ -15,29 +14,18 @@ public:
 	void DrawScene(CDC* pDC);				// iscrtava scenu
 	void DestroyScene(CDC* pDC);			// dealocira resurse alocirane u drugim funkcijama ove klase,
 
-	void DrawHalfSphere(double r, int nSegAlpha, int nSegBeta);
-	void DrawCylinder(double h, double r1, double r2, int nSeg);
-	void DrawCone(double h, double r, int nSeg);
 
-	void DrawAxis(double width);
-	void DrawGrid(double width, double height, int nSegW, int nSegH);
-
-	void DrawFigure(double angle);
-
-	void DrawCactusArm(double angle, Color first_clr);
-	void DrawExtCactusArm(double angle, Color first_clr);
-	void DrawPot();
-	void DrawFigure();
-	void DrawWalls();
-	void DrawVaseCylinder(float h, float r1, float r2, Color color);
-	void SetupLigting();
-	void SetupMaterials();
-	float yellow_rot_angle;
+	void DrawRectangle(float size1, float side2);
+	void UpdateCamera();
+	void DrawCircle(float r, int segments);
+	void DrawNormal(float x, float y, float z, float nx, float ny, float nz, float scale);
+	Camera camera;
+	bool DrawNormals;
+	float NormalSize;
+	const float DEG2RAD = M_PI / 180.0f;
 protected:
 	HGLRC	 m_hrc; //OpenGL Rendering Context 
 
-	const Color light_green{ 0.0f, 1.0f, 0.0f };
-	const Color dark_green{ 0.0f, 0.67f, 0.0f };
-	const Color yellow{ 1.0f,1.0f,0.0f };
-	const Color pot_clr{ 0.8667f, 0.4941f, 0.1176f };
+
+
 };

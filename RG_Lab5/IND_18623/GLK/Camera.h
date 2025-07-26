@@ -1,86 +1,53 @@
 #pragma once
-#include "vec3.h"
+#include<algorithm>
+#include<corecrt_math_defines.h>
 #include <cmath>
-#include <corecrt_math_defines.h>
 
-class Camera {
-public:
-    static Camera& getInstance() {
-        static Camera instance;
-        return instance;
-    }
+struct Camera {
 
-    void initialize(const vec3& initPosition, float initYaw = 0.0f, float initPitch = 0.0f) {
-        position = initPosition;
-        yaw = initYaw;
-        pitch = initPitch;
-        updateDirectionVectors(); // Calculate forward, right, up
-    }
+	float posX, posY, posZ;
+	float yaw, pitch;
+	const float MAX_ABS_PITCH = 89;
+	const float DEG2RAD = M_PI / 180.0f;
 
-    void rotate(float deltaYaw, float deltaPitch) {
-        yaw += deltaYaw;
-        pitch += deltaPitch;
+	Camera() : posX(0), posY(0), posZ(5), yaw(0), pitch(0) {}
 
-        if (pitch > 89.0f) pitch = 89.0f;
-        if (pitch < -89.0f) pitch = -89.0f;
+	void SetPosition(float x, float y, float z) {
+		posX = x;
+		posY = y;
+		posZ = z;
+	}
 
-        updateDirectionVectors();
-    }
+	void SetRotation(float _yaw, float _pitch) {
+		yaw = _yaw;
+		pitch = _pitch;
+		if (pitch > MAX_ABS_PITCH)
+			pitch = MAX_ABS_PITCH;
+		if (pitch < -MAX_ABS_PITCH)
+			pitch = -MAX_ABS_PITCH;
+	}
 
-    void move(const vec3& direction, float amount) {
-        position += direction * amount;
-    }
+	void Rotate(float dYaw, float dPitch) {
+		SetRotation(yaw + dYaw, pitch + dPitch);
+	}
 
-    void moveForward(float amount) {
-        position += forward * amount;
-    }
+	void Move(float right, float up, float forward) {
+		float radPitch = pitch * DEG2RAD;
+		float radYaw = yaw * DEG2RAD;
+		
+		float dirX = cos(radPitch) * sin(radYaw);
+		float dirY = sin(radPitch);
+		float dirZ = -cos(radPitch) * cos(radYaw);
 
-    void moveRight(float amount) {
-        position += right * amount;
-    }
+		// Right vector (cross product of forward and world up)
+		float rightX = cos(radYaw);
+		float rightZ = sin(radYaw);
 
-    void moveUp(float amount) {
-        position += up * amount;
-    }
-
-    vec3 getForward() const { return forward; }
-    vec3 getRight()   const { return right; }
-    vec3 getUp()      const { return up; }
-    vec3 getPosition() const { return position; }
-
-    float getYaw() const { return yaw; }
-    float getPitch() const { return pitch; }
-
-private:
-    Camera(float yaww = 90.0f, float pitchh = 0.0f) {
-        yaw = yaww;
-        pitch = pitchh;
-        position = vec3(0.0f, 0.0f, 0.0f);
-        updateDirectionVectors();
-    }
-
-    void updateDirectionVectors() {
-        float yawRad = yaw * M_PI / 180.0f;
-        float pitchRad = pitch * M_PI / 180.0f;
-
-        forward.x = cos(pitchRad) * sin(yawRad);
-        forward.y = sin(pitchRad);
-        forward.z = cos(pitchRad) * cos(yawRad);
-        forward = forward.normalize();
-
-        // World up
-        vec3 worldUp(0.0f, 1.0f, 0.0f);
-
-        // Correct cross product order
-        right = forward.cross(worldUp).normalize();   // Right = forward × up
-        up = right.cross(forward).normalize();        // Up = right × forward
-    }
+		// Apply movement
+		posX += forward * dirX + right * rightX;
+		posY += up;
+		posZ += forward * dirZ + right * rightZ;
+	}
 
 
-    vec3 position;
-    vec3 forward;
-    vec3 right;
-    vec3 up;
-    float yaw;
-    float pitch;
 };

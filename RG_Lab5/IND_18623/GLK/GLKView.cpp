@@ -162,44 +162,50 @@ void CGLKView::OnInitialUpdate()
 
 void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	Camera& camera = Camera::getInstance();
-	float angleDelta = 5.0f;  // Angle increment for theta and phi
-	float radiusDelta = 5.0f; // Radius increment for zoom in/out
-	float moveSpeed = 1.0f;
-
+	float moveSpeed = 1.0f, rotateSpeed = 2.0f;
+	float dx = 0, dy = 0, dz = 0;
+	float pitch = 0, yaw = 0;
 	switch (nChar) {
 	case 'W':
-		camera.move(camera.getForward(), moveSpeed);
+		dz += moveSpeed;
 		break;
 	case 'S':
-		camera.move(camera.getForward(), -moveSpeed);
+		dz -= moveSpeed;
 		break;
 	case 'A':
-		camera.move(camera.getRight(), -moveSpeed);
+		dx -= moveSpeed;
 		break;
 	case 'D':
-		camera.move(camera.getRight(), moveSpeed);
+		dx += moveSpeed;
 		break;
 	case VK_SPACE:
-		camera.move(vec3::unitY(), moveSpeed);
+		dy += moveSpeed;
 		break;
-	case VK_CONTROL:
-		camera.move(-vec3::unitY(), moveSpeed);
+	case VK_SHIFT:
+		dy -= moveSpeed;
 		break;
 	case VK_UP:
-		camera.rotate(0.0f, angleDelta); // Look up
+		pitch += rotateSpeed;
 		break;
 	case VK_DOWN:
-		camera.rotate(0.0f, -angleDelta); // Look down
+		pitch -= rotateSpeed;
+		break;
+
+		// Yaw (3 = left, 4 = right)
+	case VK_LEFT:
+		yaw -= rotateSpeed;
 		break;
 	case VK_RIGHT:
-		camera.rotate(-angleDelta, 0.0f); // Look left
+		yaw += rotateSpeed;
 		break;
-	case VK_LEFT:
-		camera.rotate(angleDelta, 0.0f); // Look right
+	case 'N':
+		GL_Renderer.DrawNormals = !GL_Renderer.DrawNormals;
+	default:
 		break;
 	}
 
+	GL_Renderer.camera.Move(dx, dy, dz);
+	GL_Renderer.camera.Rotate(yaw, pitch);
 	Invalidate(); // Redraw the view
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }

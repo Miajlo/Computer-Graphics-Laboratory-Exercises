@@ -5,7 +5,7 @@
 #pragma once
 
 #include "GLRenderer.h"
-#include "Camera.h"
+
 #define ROT_STEP 5
 
 
