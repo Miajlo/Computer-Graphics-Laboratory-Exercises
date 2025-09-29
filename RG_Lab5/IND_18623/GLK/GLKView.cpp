@@ -181,7 +181,7 @@ void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	case VK_SPACE:
 		dy += moveSpeed;
 		break;
-	case VK_SHIFT:
+	case VK_CONTROL:
 		dy -= moveSpeed;
 		break;
 	case VK_UP:
