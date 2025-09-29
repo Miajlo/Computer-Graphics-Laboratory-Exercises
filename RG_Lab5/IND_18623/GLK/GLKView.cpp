@@ -190,7 +190,6 @@ void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	case VK_DOWN:
 		pitch -= rotateSpeed;
 		break;
-
 		// Yaw (3 = left, 4 = right)
 	case VK_LEFT:
 		yaw -= rotateSpeed;
@@ -200,6 +199,16 @@ void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		break;
 	case 'N':
 		GL_Renderer.DrawNormals = !GL_Renderer.DrawNormals;
+		break;
+	case 'R':
+		GL_Renderer.showRedLight = !GL_Renderer.showRedLight;
+		break;
+	case 'G':
+		GL_Renderer.showGreenLight = !GL_Renderer.showGreenLight;
+		break;
+	case 'B':
+		GL_Renderer.showBlueLight = !GL_Renderer.showBlueLight;
+		break;
 	default:
 		break;
 	}

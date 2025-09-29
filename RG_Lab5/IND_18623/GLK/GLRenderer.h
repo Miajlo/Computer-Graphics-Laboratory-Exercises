@@ -18,19 +18,26 @@ public:
 	void DestroyScene(CDC* pDC);			// dealocira resurse alocirane u drugim funkcijama ove klase,
 
 
+	void DrawBox(float squareSide);
+	void DrawVase(float squareSide);
+
 	void DrawRectangle(float size1, float side2);
 	void UpdateCamera();
 	void DrawCircle(float r, int segments);
 	void DrawNormal(float x, float y, float z, float nx, float ny, float nz, float scale);
-	void DrawSphere(float radius, int slices, int stacks);
+	void DrawSphere(float radius, int slices, int stacks, bool hemisphere=false);
 	void DrawLightCircle(float radius);
+	void DrawParallelopiped(float a, float b, float c);
+	void DrawHollowCylinder(float radius, float height, int segments);
 	void SetMaterial(float r, float g, float b, float shininess=0);
 	Camera camera;
 	bool DrawNormals;
 	float NormalSize;
 	const float DEG2RAD = M_PI / 180.0f;
-	int numActiveLights;
-	bool showLightSources;
+	const float SPOT_CUTOFF = 45.0f;
+	bool showRedLight;
+	bool showGreenLight;
+	bool showBlueLight;
 protected:
 	HGLRC	 m_hrc; //OpenGL Rendering Context 
 

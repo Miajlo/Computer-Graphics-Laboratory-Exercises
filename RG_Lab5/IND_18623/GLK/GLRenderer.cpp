@@ -11,7 +11,7 @@
 CGLRenderer::CGLRenderer(void) {
     DrawNormals = true;
     NormalSize = 3.0f;
-    showLightSources = true;
+    showBlueLight = showRedLight = showGreenLight = true;
 }
 
 CGLRenderer::~CGLRenderer(void)
@@ -78,7 +78,7 @@ void CGLRenderer::PrepareScene(CDC *pDC)
     glLightfv(GL_LIGHT0, GL_AMBIENT, red_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, red_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, red_specular);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 45.0f);
+    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, SPOT_CUTOFF);
     glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 15.0f);
 
     // GREEN LIGHT (LIGHT1)
@@ -89,7 +89,7 @@ void CGLRenderer::PrepareScene(CDC *pDC)
     glLightfv(GL_LIGHT1, GL_AMBIENT, green_ambient);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, green_diffuse);
     glLightfv(GL_LIGHT1, GL_SPECULAR, green_specular);
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0f);
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, SPOT_CUTOFF);
     glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 15.0f);
 
     // BLUE LIGHT (LIGHT2)
@@ -100,7 +100,7 @@ void CGLRenderer::PrepareScene(CDC *pDC)
     glLightfv(GL_LIGHT2, GL_AMBIENT, blue_ambient);
     glLightfv(GL_LIGHT2, GL_DIFFUSE, blue_diffuse);
     glLightfv(GL_LIGHT2, GL_SPECULAR, blue_specular);
-    glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 45.0f);
+    glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, SPOT_CUTOFF);
     glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 15.0f);
 
     /*glEnable(GL_COLOR_MATERIAL);
@@ -110,12 +110,11 @@ void CGLRenderer::PrepareScene(CDC *pDC)
 	wglMakeCurrent(NULL, NULL);
 }
 
-void CGLRenderer::DrawScene(CDC *pDC)
+void CGLRenderer::DrawScene(CDC* pDC)
 {
     wglMakeCurrent(pDC->m_hDC, m_hrc);
-    //---------------------------------
 
-    // Clear the color and depth buffers
+    // Initialize rendering state
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glMatrixMode(GL_MODELVIEW);
@@ -123,93 +122,124 @@ void CGLRenderer::DrawScene(CDC *pDC)
 
     UpdateCamera();
 
+    // ========== LIGHT SETUP ==========
+    // Red spotlight - left side
     GLfloat red_pos[] = { -4.0f, 5.0f, 0.0f, 1.0f };
     GLfloat red_dir[] = { 0.0f, -1.0f, 0.0f };
     glLightfv(GL_LIGHT0, GL_POSITION, red_pos);
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, red_dir);
 
-    // GREEN light - center
+    // Green spotlight - right side
     GLfloat green_pos[] = { 4.0f, 5.0f, 0.0f, 1.0f };
     GLfloat green_dir[] = { 0.0f, -1.0f, 0.0f };
     glLightfv(GL_LIGHT1, GL_POSITION, green_pos);
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, green_dir);
 
-    // BLUE light - other side
+    // Blue spotlight - center
     GLfloat blue_pos[] = { 0.0f, 5.0f, 0.0f, 1.0f };
     GLfloat blue_dir[] = { 0.0f, -1.0f, 0.0f };
     glLightfv(GL_LIGHT2, GL_POSITION, blue_pos);
     glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, blue_dir);
 
-    float lightSourceRadius = 0.1;
+    // Toggle lights based on visibility flags
+    showRedLight ? glEnable(GL_LIGHT0) : glDisable(GL_LIGHT0);
+    showGreenLight ? glEnable(GL_LIGHT1) : glDisable(GL_LIGHT1);
+    showBlueLight ? glEnable(GL_LIGHT2) : glDisable(GL_LIGHT2);
 
-    glDisable(GL_LIGHTING);
-        glTranslatef(0, -5, 0);
-        glPushMatrix();
-            glTranslatef(0, 10, 0);
-            glColor3f(0, 0, 1);
+    // Calculate geometric parameters
+    const float squareSide = 10.0f;
+    const float halfSquareSize = squareSide / 2.0f;
+    const float lightSourceRadius = 0.1f;
+    const float lightSpotlightRadius = tanf(SPOT_CUTOFF / 2 * DEG2RAD) * squareSide / 2;
+    const int lightspotlightSegments = 16;
+
+    // Offset scene downward
+    glTranslatef(0.0f, -5.0f, 0.0f);
+
+    // ========== DRAW LIGHT SOURCE INDICATORS ==========
+    if (showBlueLight || showRedLight || showGreenLight) {
+        glDisable(GL_LIGHTING);
+
+        if (showRedLight) {
+            glPushMatrix();
+            glTranslatef(-4.0f, 5.0f, 0.0f);
+            glColor3f(1.0f, 0.0f, 0.0f);
             DrawSphere(lightSourceRadius, 16, 16);
-        glPopMatrix();
+            glPopMatrix();
+        }
 
-        glPushMatrix();
-            glTranslatef(4, 5, 0);
-            glColor3f(0, 1, 0);
+        if (showGreenLight) {
+            glPushMatrix();
+            glTranslatef(4.0f, 5.0f, 0.0f);
+            glColor3f(0.0f, 1.0f, 0.0f);
             DrawSphere(lightSourceRadius, 16, 16);
-        glPopMatrix();
+            glPopMatrix();
+        }
 
-        glPushMatrix();
-            glTranslatef(-4, 5, 0);
-            glColor3f(1, 0, 0);
+        if (showBlueLight) {
+            glPushMatrix();
+            glTranslatef(0.0f, 10.0f, 0.0f);
+            glColor3f(0.0f, 0.0f, 1.0f);
             DrawSphere(lightSourceRadius, 16, 16);
+            glPopMatrix();
+        }
+
+        glEnable(GL_LIGHTING);
+    }
+
+    // ========== DRAW ROOM GEOMETRY ==========
+    SetMaterial(0.8f, 0.8f, 0.8f, 32.0f);
+
+    // Floor
+    DrawBox(squareSide);
+
+
+    if (showRedLight) {
+        glDisable(GL_LIGHTING);
+        glPushMatrix();
+        glTranslatef(0.0f, 0.0f, -0.01f);
+        glColor3f(1.0f, 0.0f, 0.0f);
+        DrawCircle(lightSpotlightRadius, lightspotlightSegments);
         glPopMatrix();
-    glEnable(GL_LIGHTING);
-
-    float squareSide = 10.0f, halfSquareSize = squareSide/2.0f;
-
-    
-    SetMaterial(0.8f, 0.8f, 0.8f, 32.0f);
-
-    glPushMatrix();
-        glRotatef(90, -1, 0 , 0);
-        DrawRectangle(squareSide, squareSide);
+        glEnable(GL_LIGHTING);
+    }
     glPopMatrix();
 
-    SetMaterial(0.8f, 0.8f, 0.8f, 32.0f);
+    // Right wall (with green spotlight projection)
+    glPushMatrix();
+    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+    glTranslatef(0.0f, 0.0f, halfSquareSize);
+    DrawRectangle(squareSide, squareSide);
 
-    glPushMatrix();
-    glTranslatef(0, halfSquareSize, 0);
-    glPushMatrix();
-        glTranslatef(0, 0, halfSquareSize);
-        DrawRectangle(squareSide, squareSide);
+    if (showGreenLight) {
+        glDisable(GL_LIGHTING);
+        glPushMatrix();
+        glTranslatef(0.0f, 0.0f, -0.01f);
+        glColor3f(0.0f, 1.0f, 0.0f);
+        DrawCircle(lightSpotlightRadius, lightspotlightSegments);
+        glPopMatrix();
+        glEnable(GL_LIGHTING);
+    }
     glPopMatrix();
 
-    SetMaterial(0.8f, 0.8f, 0.8f, 32.0f);
+    glPopMatrix(); // End room offset
 
-    glPushMatrix();
-        glTranslatef(0, 0, -halfSquareSize);
-        DrawRectangle(squareSide, squareSide);
-    glPopMatrix();
+    DrawVase(squareSide);
 
-    SetMaterial(0.8f, 0.8f, 0.8f, 32.0f);
+    // Floor spotlight projection (blue)
+    if (showBlueLight) {
+        glDisable(GL_LIGHTING);
+        glPushMatrix();
+        glTranslatef(0.0f, 0.01f, 0.0f);
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+        glColor3f(0.0f, 0.0f, 1.0f);
+        DrawCircle(lightSpotlightRadius, lightspotlightSegments);
+        glPopMatrix();
+        glEnable(GL_LIGHTING);
+    }
 
-    glPushMatrix();
-        glRotatef(90, 0, 1, 0);
-        glTranslatef(0, 0, halfSquareSize);
-        DrawRectangle(squareSide, squareSide);
-    glPopMatrix();
-
-    SetMaterial(0.8f, 0.8f, 0.8f, 32.0f);
-
-    glPushMatrix();
-        glRotatef(90, 0, -1, 0);
-        glTranslatef(0, 0, halfSquareSize);
-        DrawRectangle(squareSide, squareSide);
-    glPopMatrix();
-    glPopMatrix();
-    // Swap the front and back buffers to display the rendered image
+    // Display rendered frame
     SwapBuffers(pDC->m_hDC);
-    //---------------------------------
-
-    // Release the OpenGL context
     wglMakeCurrent(NULL, NULL);
 }
 
@@ -241,6 +271,56 @@ void CGLRenderer::DestroyScene(CDC *pDC)
 		wglDeleteContext(m_hrc);
 		m_hrc = NULL;
 	}
+}
+
+
+void CGLRenderer::DrawBox(float squareSide) {
+    float halfSquareSize = squareSide / 2.0f;
+    glPushMatrix();
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+    DrawRectangle(squareSide, squareSide);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.0f, halfSquareSize, 0.0f);
+
+    // Back wall
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, halfSquareSize);
+    DrawRectangle(squareSide, squareSide);
+    glPopMatrix();
+
+    // Front wall
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, -halfSquareSize);
+    DrawRectangle(squareSide, squareSide);
+    glPopMatrix();
+
+    // Left wall (with red spotlight projection)
+    glPushMatrix();
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+    glTranslatef(0.0f, 0.0f, halfSquareSize);
+    DrawRectangle(squareSide, squareSide);
+}
+
+void CGLRenderer::DrawVase(float squareSide) {
+    int segments = 16, stacks = 16; 
+    float radius = squareSide / 12;
+    float height = radius*1.4;
+    float parallelopipedSize = radius * 1.5, paralelopipedHeight = radius / 2;
+    DrawSphere(radius, segments, stacks, true);
+
+    glPushMatrix();
+
+    glTranslatef(0, radius/2, 0);
+
+    DrawHollowCylinder(radius / 2, height, segments);
+
+    glTranslatef(0, height + paralelopipedHeight/2, 0);
+
+    DrawParallelopiped(parallelopipedSize, paralelopipedHeight,parallelopipedSize);
+
+    glPopMatrix();
 }
 
 void CGLRenderer::DrawRectangle(float width, float height) {
@@ -294,18 +374,32 @@ void CGLRenderer::UpdateCamera() {
 
 }
 
-void CGLRenderer::DrawCircle(float r, int segments)
-{
+void CGLRenderer::DrawCircle(float r, int segments) {
+
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(0, 0, 0);
+
+    for (int i = 0; i <= segments; ++i) {
+        float angle = 2.0f * M_PI * i / segments;
+
+        float x = r * cosf(angle);
+        float y = r * sin(angle);
+
+        glVertex3f(x, y, 0);
+    }
+
+    glEnd();
 }
 
 void CGLRenderer::DrawNormal(float x, float y, float z, float nx, float ny, float nz, float scale)
 {
 }
 
-void CGLRenderer::DrawSphere(float radius, int slices, int stacks) {
+void CGLRenderer::DrawSphere(float radius, int slices, int stacks, bool hemisphere) {
+    float phiMax = hemisphere ? (M_PI / 2.0f) : M_PI;
     for (int i = 0; i < stacks; ++i) {
-        float phi1 = M_PI * i / stacks;
-        float phi2 = M_PI * (i + 1) / stacks;
+        float phi1 = phiMax * i / stacks;
+        float phi2 = phiMax * (i + 1) / stacks;
 
         glBegin(GL_QUAD_STRIP);
 
@@ -342,6 +436,79 @@ void CGLRenderer::DrawSphere(float radius, int slices, int stacks) {
 
 void CGLRenderer::DrawLightCircle(float radius)
 {
+}
+
+void CGLRenderer::DrawParallelopiped(float a, float b, float c) {
+    float hx = a / 2.0f, hy = b / 2.0f, hz= c / 2.0f;
+
+    glBegin(GL_QUADS);
+    glNormal3f(1, 0, 0);
+
+    glNormal3f(1, 0, 0);
+    glVertex3f(hx, -hy, -hz);
+    glVertex3f(hx, -hy, hz);
+    glVertex3f(hx, hy, hz);
+    glVertex3f(hx, hy, -hz);
+
+    // -X
+    glNormal3f(-1, 0, 0);
+    glVertex3f(-hx, -hy, hz);
+    glVertex3f(-hx, -hy, -hz);
+    glVertex3f(-hx, hy, -hz);
+    glVertex3f(-hx, hy, hz);
+
+    // +Y (top)
+    glNormal3f(0, 1, 0);
+    glVertex3f(-hx, hy, -hz);
+    glVertex3f(hx, hy, -hz);
+    glVertex3f(hx, hy, hz);
+    glVertex3f(-hx, hy, hz);
+
+    // -Y (bottom)  <-- added
+    glNormal3f(0, -1, 0);
+    glVertex3f(-hx, -hy, hz);
+    glVertex3f(hx, -hy, hz);
+    glVertex3f(hx, -hy, -hz);
+    glVertex3f(-hx, -hy, -hz);
+
+    // +Z (front)
+    glNormal3f(0, 0, 1);
+    glVertex3f(-hx, -hy, hz);
+    glVertex3f(-hx, hy, hz);
+    glVertex3f(hx, hy, hz);
+    glVertex3f(hx, -hy, hz);
+
+    // -Z (back)
+    glNormal3f(0, 0, -1);
+    glVertex3f(hx, -hy, -hz);
+    glVertex3f(hx, hy, -hz);
+    glVertex3f(-hx, hy, -hz);
+    glVertex3f(-hx, -hy, -hz);
+
+
+    glEnd();
+}
+
+void CGLRenderer::DrawHollowCylinder(float radius, float height, int segments) {
+    float angleStep = 2.0f * M_PI / segments;
+
+    glBegin(GL_QUAD_STRIP);
+    for (int i = 0; i <= segments; ++i) {
+        float angle = i * angleStep;
+        float x = cosf(angle) * radius;
+        float z = sinf(angle) * radius;
+
+        // Normal (points outward from cylinder wall)
+        glNormal3f(x / radius, 0.0f, z / radius);
+
+        // Bottom vertex
+        glVertex3f(x, 0.0f, z);
+
+        // Top vertex
+        glVertex3f(x, height, z);
+    }
+    glEnd();
+
 }
 
 void CGLRenderer::SetMaterial(float r, float g, float b, float shininess) {
