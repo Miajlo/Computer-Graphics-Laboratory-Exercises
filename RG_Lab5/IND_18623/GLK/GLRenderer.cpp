@@ -11,6 +11,7 @@
 CGLRenderer::CGLRenderer(void) {
     DrawNormals = true;
     NormalSize = 3.0f;
+    showLightSources = true;
 }
 
 CGLRenderer::~CGLRenderer(void)
@@ -49,10 +50,8 @@ void CGLRenderer::PrepareScene(CDC *pDC)
 	wglMakeCurrent(pDC->m_hDC, m_hrc);
 	//---------------------------------
 
-    glClearColor(0.502, 0.753, 1.0f, 1.0f); // Blue background
-    glEnable(GL_DEPTH_TEST); // Enable depth testing
-    glDepthFunc(GL_LEQUAL);  // Set depth function
-    glShadeModel(GL_SMOOTH); // Enable smooth shading
+    glClearColor(0.502, 0.753, 1.0f, 1.0f);
+
 
     glEnable(GL_NORMALIZE);
 
@@ -68,16 +67,51 @@ void CGLRenderer::DrawScene(CDC *pDC)
 
     // Clear the color and depth buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    glEnable(GL_DEPTH_TEST);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     UpdateCamera();
-    glColor3f(1, 0, 0);
+
+    float squareSide = 10.0f, halfSquareSize = squareSide/2.0f;
+
+    glColor3f(1.0f, 0, 0);
+
 
     glPushMatrix();
-    glTranslatef(0, 0, -10);
-    DrawRectangle(10, 10);
+        glTranslatef(0, -halfSquareSize, 0);
+        glRotatef(90, -1, 0 , 0);
+        DrawRectangle(squareSide, squareSide);
+    glPopMatrix();
+
+    glColor3f(0, 1.0, 0);
+
+    glPushMatrix();
+        glTranslatef(0, 0, halfSquareSize);
+        DrawRectangle(squareSide, squareSide);
+    glPopMatrix();
+
+    glColor3f(0, 0, 1.0);
+
+    glPushMatrix();
+        glTranslatef(0, 0, -halfSquareSize);
+        DrawRectangle(squareSide, squareSide);
+    glPopMatrix();
+
+    glColor3f(1.0, 1.0, 0);
+
+    glPushMatrix();
+        glRotatef(90, 0, 1, 0);
+        glTranslatef(0, 0, halfSquareSize);
+        DrawRectangle(squareSide, squareSide);
+    glPopMatrix();
+
+    glColor3f(1.0f, 0, 1.0);
+
+    glPushMatrix();
+        glRotatef(90, 0, -1, 0);
+        glTranslatef(0, 0, halfSquareSize);
+        DrawRectangle(squareSide, squareSide);
     glPopMatrix();
 
     // Swap the front and back buffers to display the rendered image
@@ -118,35 +152,26 @@ void CGLRenderer::DestroyScene(CDC *pDC)
 	}
 }
 
-void CGLRenderer::DrawRectangle(float size1, float side2) {
+void CGLRenderer::DrawRectangle(float width, float height) {
+    
+    float nx = 0.0f, ny = 0.0f, nz = 1.0f;
 
-    float mid1 = size1 / 2, mid2 = side2 / 2;
+    float halfWidth = width / 2.0f;
+    float halfHeight = height / 2.0f;
 
     glBegin(GL_QUADS);
-    glNormal3f(0, 0, 1);
 
-    glVertex3f(-mid1, - mid2, 0);
-    glVertex3f(mid1, -mid2, 0);
-    glVertex3f(mid1, mid2, 0);
-    glVertex3f(-mid1, mid2, 0);
+    glNormal3f(nx, ny, nz);
+
+    glVertex3f(-halfWidth, -halfHeight, 0.0f);
+
+    glVertex3f(halfWidth, -halfHeight, 0.0f);
+
+    glVertex3f(halfWidth, halfHeight, 0.0f);
+
+    glVertex3f(-halfWidth, halfHeight, 0.0f);
 
     glEnd();
-
-    if (DrawNormals) {
-        glColor3f(1, 1, 0);
-
-
-        float nx = 0, ny = 0, nz = 1;
-        float scale = NormalSize;
-
-        glBegin(GL_LINES);
-        DrawNormal(-mid1, -mid2, 0, nx, ny, nz, scale);
-        DrawNormal(mid1, -mid2, 0, nx, ny, nz, scale);
-        DrawNormal(mid1, mid2, 0, nx, ny, nz, scale);
-        DrawNormal(-mid1, mid2, 0, nx, ny, nz, scale);
-        glEnd();
-    }
-
 }
 
 void CGLRenderer::UpdateCamera() {
@@ -178,19 +203,22 @@ void CGLRenderer::UpdateCamera() {
 
 }
 
-void CGLRenderer::DrawCircle(float r, int segments) {
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0, 0);
+void CGLRenderer::DrawCircle(float r, int segments)
+{
 }
 
 void CGLRenderer::DrawNormal(float x, float y, float z, float nx, float ny, float nz, float scale)
 {
-
-    glVertex3f(x, y, z);
-    glVertex3f(x + nx * scale, y + ny * scale, z + nz * scale);
-
 }
 
+void CGLRenderer::DrawSphere(float radius, int slices, int stacks)
+{
+}
 
+void CGLRenderer::DrawLightCircle(float radius)
+{
+}
 
-
+void CGLRenderer::SetMaterial(float r, float g, float b, float shininess)
+{
+}

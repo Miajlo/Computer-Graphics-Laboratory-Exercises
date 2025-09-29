@@ -1,6 +1,9 @@
 #pragma once
 #include "Camera.h"
 #include<corecrt_math_defines.h>
+#include <windows.h>      // required before gl.h on Windows
+#include <GL/gl.h> 
+
 
 class CGLRenderer
 {
@@ -19,10 +22,15 @@ public:
 	void UpdateCamera();
 	void DrawCircle(float r, int segments);
 	void DrawNormal(float x, float y, float z, float nx, float ny, float nz, float scale);
+	void DrawSphere(float radius, int slices, int stacks);
+	void DrawLightCircle(float radius);
+	void SetMaterial(float r, float g, float b, float shininess=0);
 	Camera camera;
 	bool DrawNormals;
 	float NormalSize;
 	const float DEG2RAD = M_PI / 180.0f;
+	int numActiveLights;
+	bool showLightSources;
 protected:
 	HGLRC	 m_hrc; //OpenGL Rendering Context 
 

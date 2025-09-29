@@ -162,7 +162,7 @@ void CGLKView::OnInitialUpdate()
 
 void CGLKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	float moveSpeed = 1.0f, rotateSpeed = 2.0f;
+	float moveSpeed = 1.0f, rotateSpeed = 5.0f;
 	float dx = 0, dy = 0, dz = 0;
 	float pitch = 0, yaw = 0;
 	switch (nChar) {
