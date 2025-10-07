@@ -103,8 +103,8 @@ void CGLRenderer::PrepareScene(CDC *pDC)
     glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, SPOT_CUTOFF);
     glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 15.0f);
 
-    /*glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);*/
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
 	//---------------------------------
 	wglMakeCurrent(NULL, NULL);
@@ -151,7 +151,7 @@ void CGLRenderer::DrawScene(CDC* pDC)
     const float halfSquareSize = squareSide / 2.0f;
     const float lightSourceRadius = 0.1f;
     const float lightSpotlightRadius = tanf(SPOT_CUTOFF / 2 * DEG2RAD) * squareSide / 2;
-    const int lightspotlightSegments = 16;
+    const int lightspotlightSegments = 256;
 
     // Offset scene downward
     glTranslatef(0.0f, -5.0f, 0.0f);
@@ -185,10 +185,7 @@ void CGLRenderer::DrawScene(CDC* pDC)
         }
 
         glEnable(GL_LIGHTING);
-    }
-
-    // ========== DRAW ROOM GEOMETRY ==========
-    SetMaterial(0.8f, 0.8f, 0.8f, 32.0f);
+    } 
 
     // Floor
     DrawBox(squareSide);
@@ -197,25 +194,19 @@ void CGLRenderer::DrawScene(CDC* pDC)
     if (showRedLight) {
         glDisable(GL_LIGHTING);
         glPushMatrix();
-        glTranslatef(0.0f, 0.0f, -0.01f);
-        glColor3f(1.0f, 0.0f, 0.0f);
+        glTranslatef(halfSquareSize - 0.01f, 0.0f, 0.0f);
+        glRotatef(90, 0, 1, 0);
+        glColor3f(1.0f, 0.5f, 0.5f);
         DrawCircle(lightSpotlightRadius, lightspotlightSegments);
         glPopMatrix();
         glEnable(GL_LIGHTING);
     }
-    glPopMatrix();
-
-    // Right wall (with green spotlight projection)
-    glPushMatrix();
-    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-    glTranslatef(0.0f, 0.0f, halfSquareSize);
-    DrawRectangle(squareSide, squareSide);
-
     if (showGreenLight) {
         glDisable(GL_LIGHTING);
         glPushMatrix();
-        glTranslatef(0.0f, 0.0f, -0.01f);
-        glColor3f(0.0f, 1.0f, 0.0f);
+        glTranslatef(-halfSquareSize+0.01f, 0.0f, 0.0f);
+        glRotatef(90, 0, 1, 0);
+        glColor3f(0.5f, 1.0f, 0.5f);
         DrawCircle(lightSpotlightRadius, lightspotlightSegments);
         glPopMatrix();
         glEnable(GL_LIGHTING);
@@ -232,7 +223,7 @@ void CGLRenderer::DrawScene(CDC* pDC)
         glPushMatrix();
         glTranslatef(0.0f, 0.01f, 0.0f);
         glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
+        glColor3f(0.5f, 0.5f, 1.0f);
         DrawCircle(lightSpotlightRadius, lightspotlightSegments);
         glPopMatrix();
         glEnable(GL_LIGHTING);
@@ -276,6 +267,9 @@ void CGLRenderer::DestroyScene(CDC *pDC)
 
 void CGLRenderer::DrawBox(float squareSide) {
     float halfSquareSize = squareSide / 2.0f;
+
+    glColor3f(0.8, 0.8, 0.8);
+
     glPushMatrix();
     glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
     DrawRectangle(squareSide, squareSide);
@@ -301,24 +295,70 @@ void CGLRenderer::DrawBox(float squareSide) {
     glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
     glTranslatef(0.0f, 0.0f, halfSquareSize);
     DrawRectangle(squareSide, squareSide);
+
+    glPopMatrix();
+
+    // Right wall (with green spotlight projection)
+    glPushMatrix();
+    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+    glTranslatef(0.0f, 0.0f, halfSquareSize);
+    DrawRectangle(squareSide, squareSide);
+
+    glPopMatrix();
 }
 
 void CGLRenderer::DrawVase(float squareSide) {
     int segments = 16, stacks = 16; 
-    float radius = squareSide / 12;
-    float height = radius*1.4;
-    float parallelopipedSize = radius * 1.5, paralelopipedHeight = radius / 2;
+    float radius = squareSide / 12, halfR = radius / 2.0f;
+    float height = radius;
+    float parallelopipedSize = radius * 1.5, paralelopipedHeight = radius / 4;
+    float cylinderHeight = 0.15f;
+    float cylR1 = radius / 1.75, halfCylR = cylR1 / 2, cylR2 = cylR1*0.75;
+    glColor3f(0.5, 0.5, 0.5);
+
     DrawSphere(radius, segments, stacks, true);
 
     glPushMatrix();
 
     glTranslatef(0, radius/2, 0);
 
-    DrawHollowCylinder(radius / 2, height, segments);
+    DrawHollowCylinder(halfR, halfR, height, segments);
 
     glTranslatef(0, height + paralelopipedHeight/2, 0);
 
     DrawParallelopiped(parallelopipedSize, paralelopipedHeight,parallelopipedSize);
+
+    glTranslatef(0, paralelopipedHeight / 2, 0);
+
+    //glColor3f(0.72, 0.02, 0.72);
+
+    DrawCylinderPart(cylR1, cylR2, cylinderHeight, segments);    
+
+    DrawCylinderPart(cylR2, halfCylR, cylinderHeight, segments);
+
+    DrawCylinderPart(halfCylR, halfCylR, cylinderHeight, segments);
+
+    DrawCylinderPart(halfCylR, halfCylR, cylinderHeight, segments);
+
+    DrawCylinderPart(halfCylR, cylR2, cylinderHeight, segments);
+
+    DrawCylinderPart(cylR2, halfCylR, cylinderHeight, segments);
+
+    DrawCylinderPart(halfCylR, cylR2, cylinderHeight, segments);
+
+    DrawCylinderPart(cylR2, cylR1, cylinderHeight, segments);
+
+    DrawCylinderPart(cylR1, cylR2, cylinderHeight, segments);
+
+    DrawCylinderPart(cylR2, halfCylR, cylinderHeight, segments);
+
+    DrawCylinderPart(halfCylR, cylR2, cylinderHeight, segments);
+
+    DrawCylinderPart(cylR2, halfCylR, cylinderHeight, segments);
+
+    DrawCylinderPart(halfCylR, cylR2, cylinderHeight, segments);
+
+    DrawCylinderPart(cylR2, cylR1, cylinderHeight, segments);
 
     glPopMatrix();
 }
@@ -489,23 +529,33 @@ void CGLRenderer::DrawParallelopiped(float a, float b, float c) {
     glEnd();
 }
 
-void CGLRenderer::DrawHollowCylinder(float radius, float height, int segments) {
+void CGLRenderer::DrawHollowCylinder(float r1, float r2, float height, int segments) {
     float angleStep = 2.0f * M_PI / segments;
 
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= segments; ++i) {
         float angle = i * angleStep;
-        float x = cosf(angle) * radius;
-        float z = sinf(angle) * radius;
-
-        // Normal (points outward from cylinder wall)
-        glNormal3f(x / radius, 0.0f, z / radius);
 
         // Bottom vertex
-        glVertex3f(x, 0.0f, z);
+        float x1 = cosf(angle) * r1;
+        float z1 = sinf(angle) * r1;
 
-        // Top vertex
-        glVertex3f(x, height, z);
+        // Top vertex  
+        float x2 = cosf(angle) * r2;
+        float z2 = sinf(angle) * r2;
+
+        // Normal at this angle (same for both vertices since same angular position)
+        float nx = cosf(angle);
+        float nz = sinf(angle);
+
+        // CORRECT: Each vertex gets its own normal call
+        // Bottom vertex with its normal
+        glNormal3f(nx, 0.0f, nz);
+        glVertex3f(x1, 0.0f, z1);
+
+        // Top vertex with its normal (same direction)
+        glNormal3f(nx, 0.0f, nz);
+        glVertex3f(x2, height, z2);
     }
     glEnd();
 
@@ -521,4 +571,18 @@ void CGLRenderer::SetMaterial(float r, float g, float b, float shininess) {
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 
+}
+
+void CGLRenderer::DrawCylinderPart(float r1, float r2, float height, int segments) {
+
+    if(currColor)
+        glColor3f(0.72, 0.02, 0.72);
+    else
+        glColor3f(0.008, 0.76, 0.76);
+
+    currColor = !currColor;
+
+    DrawHollowCylinder(r1, r2, height, segments);
+
+    glTranslatef(0, height, 0);
 }

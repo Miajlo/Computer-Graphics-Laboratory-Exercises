@@ -28,8 +28,11 @@ public:
 	void DrawSphere(float radius, int slices, int stacks, bool hemisphere=false);
 	void DrawLightCircle(float radius);
 	void DrawParallelopiped(float a, float b, float c);
-	void DrawHollowCylinder(float radius, float height, int segments);
+	void DrawHollowCylinder(float r1, float r2, float height, int segments);
 	void SetMaterial(float r, float g, float b, float shininess=0);
+
+	void DrawCylinderPart(float r1, float r2, float height, int segments);
+
 	Camera camera;
 	bool DrawNormals;
 	float NormalSize;
@@ -41,6 +44,6 @@ public:
 protected:
 	HGLRC	 m_hrc; //OpenGL Rendering Context 
 
-
+	bool currColor = false;
 
 };
